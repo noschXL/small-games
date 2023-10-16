@@ -497,9 +497,9 @@ while running:
         xy = squares.fields[i].get_xy()
         if figure != None:
             if xy[1] == 7 and figure.color == "black" and isinstance(figure, pieces.pawn):
-
-                checking = True
-                caption = "waiting for input(1 = queen,2 = rook,p 3 = bishop, 4 = knight)"
+                #print(f"xy: {xy} figure.color: {figure.color} isinstance: {isinstance(figure, pieces.pawn)}")
+                checking = False
+                #caption = "waiting for input(1 = queen,2 = rook,p 3 = bishop, 4 = knight)"
 
                 while checking:
                     keys = pygame.key.get_pressed()
