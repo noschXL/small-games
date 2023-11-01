@@ -26,8 +26,6 @@ class fluid:
         self.velocity = pg.math.Vector2()
 
     def update(self):
-        self.list_pos = len(fluid.dots)
-        #self.evening_out()
         self.velocity.y += GRAVITY
         self.velocity / DRAFT
         if self.velocity.x >= MAX_VEL.x:
@@ -53,14 +51,13 @@ class fluid:
         if self.position.x >= 900 - SIZE:
             self.velocity.x = -abs(self.velocity.x)
             self.velocity.x *= COLLISION_DAMPING
+
     def evening_out(self):
         new_vel = pg.Vector2()
         new_vel_main = pg.Vector2()
-
-        
         for dot in fluid.dots:
-        
-            
+            if abs(self.position - dot.position)
+
     def average_vectors(self, Vector1,Vector2):
         return (Vector1 + Vector2) / 2
 
@@ -103,10 +100,12 @@ def event_check():
 def update():
     wn.fill((0,0,0))
     for dot in fluid.dots:
+        dot.evening_out()
         dot.update()
     pg.display.flip()
 
 while True:
     event_check()
+
     update()
     clock.tick(FPS)
