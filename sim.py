@@ -54,6 +54,7 @@ class fluid:
 
     def evening_out(self):
         new_vel = pg.Vector2()
+        vel_list = []
         new_vel_main = pg.Vector2()
         for dot in fluid.dots:
             dist = math.sqrt((abs(self.position.x - dot.position.x)) ** 2 + (abs(self.position.y - dot.position.y)) ** 2) #satz des pythagoras
@@ -61,10 +62,20 @@ class fluid:
                 continue
             new_vel.x +=  1 /-(self.position.x - dot.position.x)
             new_vel.y += 1 /-(self.position.y - dot.position.y)
+            vel_list.append(new_vel)
 
-
-    def average_vectors(self, Vector1,Vector2):
-        return pg.Vector2((Vector1.x + Vector2.x) / 2,(Vector1.y + Vector2.y) / 2)
+    def average_vectors(self, Vector_list = []):
+        x = 0
+        y = 0
+        if Vector_list == []:
+            return (0,0)
+        ret_vec = pg.Vector2()
+        for vec in Vector_list:
+            x += vec.x
+            y += vec.y
+        ret_vec.x = x / len(Vector_list)
+        ret_vec.y = y / len(Vector_list)
+        return ret_vec
 
     def smoothing_kernel(self,dst):
         volume = math.pi * pow(RADIUS, 8) / 4
