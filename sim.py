@@ -56,10 +56,15 @@ class fluid:
         new_vel = pg.Vector2()
         new_vel_main = pg.Vector2()
         for dot in fluid.dots:
-            if abs(self.position - dot.position)
+            dist = math.sqrt((abs(self.position.x - dot.position.x)) ** 2 + (abs(self.position.y - dot.position.y)) ** 2) #satz des pythagoras
+            if dist >= 500:
+                continue
+            new_vel.x +=  1 /-(self.position.x - dot.position.x)
+            new_vel.y += 1 /-(self.position.y - dot.position.y)
+
 
     def average_vectors(self, Vector1,Vector2):
-        return (Vector1 + Vector2) / 2
+        return pg.Vector2((Vector1.x + Vector2.x) / 2,(Vector1.y + Vector2.y) / 2)
 
     def smoothing_kernel(self,dst):
         volume = math.pi * pow(RADIUS, 8) / 4
