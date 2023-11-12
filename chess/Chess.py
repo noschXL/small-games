@@ -438,6 +438,86 @@ def set_board_from_string(string):
 
 set_board_from_string(start_pos)
 
+def get_string_from_board():
+    color = None
+    string = ""
+    substring = ""
+    times = 0
+    last_piece = None
+    for square in squares.fields:
+        piece = square.get_piece()
+        if not isinstance(piece, pieces):
+            if "e" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"e{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.pawn):
+            if "b" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"b{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.knight):
+            if "k" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"k{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.pawn):
+            if "l" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"l{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.knight):
+            if "t" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"t{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.queen):
+            if "d" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"d{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.king):
+            if "a" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"a{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        return f"{substring,}"
+
 storage = None
 oldsquare = 0
 square = 0
