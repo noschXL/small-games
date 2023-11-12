@@ -12,7 +12,7 @@ SIZE = 10
 RADIUS = 100
 DOT_SPACE = 50
 clock = pg.time.Clock()
-DOTS = 10
+DOTS = 1
 MASS = 1
 MAX_VEL = pg.math.Vector2(50,50)
 
@@ -58,7 +58,7 @@ class fluid:
         new_vel_main = pg.Vector2()
         for dot in fluid.dots:
             dist = math.sqrt((abs(self.position.x - dot.position.x)) ** 2 + (abs(self.position.y - dot.position.y)) ** 2) #satz des pythagoras
-            if dist >= 500:
+            if dist >= 500 or dist == 0:
                 continue
             new_vel.x +=  1 /-(self.position.x - dot.position.x)
             new_vel.y += 1 /-(self.position.y - dot.position.y)

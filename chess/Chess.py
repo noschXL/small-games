@@ -28,6 +28,9 @@ music = ["snd/1.mp3","snd/2.mp3","snd/3.mp3"]
 
 pathdir = os.path.dirname(os.path.abspath(__file__))
 
+start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs/bs/bs/bs/bs/bs/bs/bs/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/e/bw/bw/bw/bw/bw/bw/bw/bw/tw/kw/lw/dw/aw/lw/kw/tw"
+
+
 class SpriteSheet:
 
     def __init__(self, filename):
@@ -364,7 +367,6 @@ class pieces:
                         
             return False
 
-
 # Draw squares
 for y in range(8):
     for x in range(8):
@@ -375,6 +377,63 @@ for y in range(8):
         wh_bl = 1 - wh_bl
     wh_bl = 1 - wh_bl
 
+def set_pos_from_string(string):
+    pos = 0
+    color = None
+    piece = None
+    for i in range(len(string)):
+        if string[i] == "/":
+            if piece == "b":
+                squares.fields[pos].set_piece(pieces.pawn(color,pos))
+                pos += 1
+            if piece == "l":
+                squares.fields[pos].set_piece(pieces.bishop(color,pos))
+                pos += 1
+            if piece == "k":
+                squares.fields[pos].set_piece(pieces.knight(color,pos))
+                pos += 1
+            if piece == "d":
+                squares.fields[pos].set_piece(pieces.queen(color,pos))
+                pos += 1
+            if piece == "a":
+                    squares.fields[pos].set_piece(pieces.king(color,pos))
+                    pos += 1
+            if piece == "t":
+                squares.fields[pos].set_piece(pieces.rook(color,pos))
+                pos += 1
+                print("test")
+            if piece == "e":
+                pos += 1
+            color = None
+            piece = None
+        elif string[i] == "t":
+            piece ==  "t"
+            print("test2")
+        elif string[i] == "b":
+            piece = "b"
+        elif string[i] == "l":
+            piece = "l"
+        elif string[i] == "k":
+            piece = "k"
+        elif string[i] == "d":
+            piece = "d"
+        elif string[i] == "a":
+            piece = "a"
+        elif string[i] == "e":
+            piece = None
+        elif string[i] == "w":
+            color = "white"
+        elif string[i] == "s":
+            color = "black"
+        else:
+            print(string[i])
+        for square in squares.fields:
+            square.draw()
+
+        pygame.display.flip()
+
+set_pos_from_string(start_pos)
+'''
 # Draw pawns, knights, rooks, bishops, queens and kings
 for i in range(64):
     #pawns
@@ -408,7 +467,7 @@ for i in range(64):
         squares.fields[i].set_piece(pieces.king("black", i))
     elif xy == (4,7):
         squares.fields[i].set_piece(pieces.king("white", i))
-
+'''
 
 storage = None
 oldsquare = 0
@@ -493,7 +552,7 @@ while running:
                     caption = "black is in check"
 
             
-
+    for i in range(64):
         xy = squares.fields[i].get_xy()
         if figure != None:
             if xy[1] == 7 and figure.color == "black" and isinstance(figure, pieces.pawn):
