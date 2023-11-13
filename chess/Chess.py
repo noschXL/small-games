@@ -28,6 +28,9 @@ music = ["snd/1.mp3","snd/2.mp3","snd/3.mp3"]
 
 pathdir = os.path.dirname(os.path.abspath(__file__))
 
+start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs8/32e/bw8/tw/kw/lw/dw/aw/lw/kw/tw/"
+
+
 class SpriteSheet:
 
     def __init__(self, filename):
@@ -364,7 +367,6 @@ class pieces:
                         
             return False
 
-
 # Draw squares
 for y in range(8):
     for x in range(8):
@@ -375,40 +377,146 @@ for y in range(8):
         wh_bl = 1 - wh_bl
     wh_bl = 1 - wh_bl
 
-# Draw pawns, knights, rooks, bishops, queens and kings
-for i in range(64):
-    #pawns
-    xy = squares.fields[i].get_xy()
-    if xy[1] == 1:
-        squares.fields[i].set_piece(pieces.pawn("black", i))
-    elif xy[1] == 6:
-        squares.fields[i].set_piece(pieces.pawn("white", i))
-    #knights
-    if xy == (1,0) or xy == (6,0):
-        squares.fields[i].set_piece(pieces.knight("black", i))
-    elif xy == (1,7) or xy == (6,7):
-        squares.fields[i].set_piece(pieces.knight("white", i))
-    #rooks
-    if xy == (0,0) or xy == (7,0):
-        squares.fields[i].set_piece(pieces.rook("black", i))
-    elif xy == (0,7) or xy == (7,7):
-        squares.fields[i].set_piece(pieces.rook("white", i))
-    #bishops
-    if xy == (2,0) or xy == (5,0):
-        squares.fields[i].set_piece(pieces.bishop("black", i))
-    elif xy == (2,7) or xy == (5,7):
-        squares.fields[i].set_piece(pieces.bishop("white", i))
-    #queens
-    if xy == (3,0):
-        squares.fields[i].set_piece(pieces.queen("black", i))
-    elif xy == (3,7):
-        squares.fields[i].set_piece(pieces.queen("white", i))
-    #kings
-    if xy == (4,0):
-        squares.fields[i].set_piece(pieces.king("black", i))
-    elif xy == (4,7):
-        squares.fields[i].set_piece(pieces.king("white", i))
+def set_board_from_string(string):
+    pos = 0
+    color = None
+    piece = None
+    times = 0
+    for i in range(len(string)):
+        match string[i]:
+            case "/":
+                if times == 0:
+                    times += 1
+                for i in range(times):
+                    if piece == "b":
+                        squares.fields[pos].set_piece(pieces.pawn(color,pos))
+                    if piece == "l":
+                        squares.fields[pos].set_piece(pieces.bishop(color,pos))
+                    if piece == "k":
+                        squares.fields[pos].set_piece(pieces.knight(color,pos))
+                    if piece == "d":
+                        squares.fields[pos].set_piece(pieces.queen(color,pos))
+                    if piece == "a":
+                            squares.fields[pos].set_piece(pieces.king(color,pos))
+                    if piece == "t":
+                        squares.fields [pos].set_piece(pieces.rook(color,pos))
+                    if piece == None:
+                        pass
+                    pos += 1
+                times = 0
+            case "t":
+                piece = "t"
+            case "b":
+                piece = "b"
+            case "l":
+                piece = "l"
+            case "k":
+                piece = "k"
+            case "d":
+                piece = "d"
+            case "a":
+                piece = "a"
+            case "e":
+                piece = None
+            case "w":
+                color = "white"
+            case "s":
+                color = "black"
+            case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9":
+                times = times * 10
+                times += int(string[i])
+            case _:
+                print(string[i])
+                print("ungültige position")
+                pygame.quit()
+                sys.exit()
 
+    for square in squares.fields:
+        square.draw()
+
+    pygame.display.flip()
+
+set_board_from_string(start_pos)
+
+def get_string_from_board():
+    color = None
+    string = ""
+    substring = ""
+    times = 0
+    last_piece = None
+    for square in squares.fields:
+        piece = square.get_piece()
+        if not isinstance(piece, pieces):
+            if "e" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"e{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.pawn):
+            if "b" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"b{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.knight):
+            if "k" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"k{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.pawn):
+            if "l" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"l{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.knight):
+            if "t" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"t{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.queen):
+            if "d" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"d{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        elif isinstance(piece, pieces.king):
+            if "a" in substring:
+                times += 1
+            elif substring == "":
+                substring = f"a{piece.color[0]}"
+                times += 1
+            else:
+                string += f"{substring}{times}/"
+                substring = ""
+                times = 0
+        return f"{substring,}"
 
 storage = None
 oldsquare = 0
@@ -493,7 +601,7 @@ while running:
                     caption = "black is in check"
 
             
-
+    for i in range(64):
         xy = squares.fields[i].get_xy()
         if figure != None:
             if xy[1] == 7 and figure.color == "black" and isinstance(figure, pieces.pawn):

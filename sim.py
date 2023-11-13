@@ -12,7 +12,7 @@ SIZE = 10
 RADIUS = 100
 DOT_SPACE = 50
 clock = pg.time.Clock()
-DOTS = 10
+DOTS = 1
 MASS = 1
 MAX_VEL = pg.math.Vector2(50,50)
 
