@@ -28,7 +28,7 @@ music = ["snd/1.mp3","snd/2.mp3","snd/3.mp3"]
 
 pathdir = os.path.dirname(os.path.abspath(__file__))
 
-start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs8/32e/bw8/tw/kw/lw/dw/aw/lw/kw/tw/"
+start_pos = "ts/ks/ls/ds/as/ls/ks/ts/b8/e32/bw8/tw/kw/lw/dw/aw/lw/kw/tw/" # b = pawn, t = rook, k = knight, l = bishop, d = queen, a = king, e = empty, w = white, s = black
 
 
 class SpriteSheet:
@@ -440,83 +440,92 @@ set_board_from_string(start_pos)
 
 def get_string_from_board():
     color = None
-    string = ""
-    substring = ""
     times = 0
-    last_piece = None
+    string = ""
+    curr_piece = ""
     for square in squares.fields:
         piece = square.get_piece()
-        if not isinstance(piece, pieces):
-            if "e" in substring:
+        if piece is None:
+            if curr_piece == "e" or curr_piece == "":
+                curr_piece = "e"
+                color = ""
                 times += 1
-            elif substring == "":
-                substring = f"e{piece.color[0]}"
-                times += 1
+            elif curr_piece != "e":
+                string += f"{curr_piece}{'' if times == 1 else times}/"
+                curr_piece = "e"
+                times = 1
             else:
-                string += f"{substring}{times}/"
-                substring = ""
-                times = 0
+                print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, pieces.pawn):
-            if "b" in substring:
+            if curr_piece == "b" or curr_piece == "":
+                curr_piece = "b"
                 times += 1
-            elif substring == "":
-                substring = f"b{piece.color[0]}"
-                times += 1
+                color = "w" if piece.color == "white" else "s"
+            elif curr_piece != "b":
+                string += f"{curr_piece}{color}{'' if times == 1 else times}/"
+                curr_piece = "b"
+                times = 1
             else:
-                string += f"{substring}{times}/"
-                substring = ""
-                times = 0
+                print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, pieces.knight):
-            if "k" in substring:
+            if curr_piece == "k" or curr_piece == "":
+                curr_piece = "k"
                 times += 1
-            elif substring == "":
-                substring = f"k{piece.color[0]}"
-                times += 1
+                color = "w" if piece.color == "white" else "s"
+            elif curr_piece != "k":
+                string += f"{curr_piece}{color}{'' if times == 1 else times}/"
+                curr_piece = "k"
+                times = 1
             else:
-                string += f"{substring}{times}/"
-                substring = ""
-                times = 0
-        elif isinstance(piece, pieces.pawn):
-            if "l" in substring:
+                print(f"curr_piece: {curr_piece} times: {times}")
+        elif isinstance(piece, pieces.bishop):
+            if curr_piece == "l" or curr_piece == "":
+                curr_piece = "l"
                 times += 1
-            elif substring == "":
-                substring = f"l{piece.color[0]}"
-                times += 1
+                color = "w" if piece.color == "white" else "s"
+            elif curr_piece != "l":
+                string += f"{curr_piece}{color}{'' if times == 1 else times}/"
+                curr_piece = "l"
+                times = 1
             else:
-                string += f"{substring}{times}/"
-                substring = ""
-                times = 0
-        elif isinstance(piece, pieces.knight):
-            if "t" in substring:
+                print(f"curr_piece: {curr_piece} times: {times}")
+        elif isinstance(piece, pieces.rook):
+            if curr_piece == "t" or curr_piece == "":
+                curr_piece = "t"
                 times += 1
-            elif substring == "":
-                substring = f"t{piece.color[0]}"
-                times += 1
+                color = "w" if piece.color == "white" else "s"
+            elif curr_piece != "t":
+                string += f"{curr_piece}{color}{'' if times == 1 else times}/"
+                curr_piece = "t" 
+                times = 1
             else:
-                string += f"{substring}{times}/"
-                substring = ""
-                times = 0
+                print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, pieces.queen):
-            if "d" in substring:
+            if curr_piece == "d" or curr_piece == "":
+                curr_piece = "d"
                 times += 1
-            elif substring == "":
-                substring = f"d{piece.color[0]}"
-                times += 1
+                color = "w" if piece.color == "white" else "s"
+            elif curr_piece != "d":
+                string += f"{curr_piece}{color}{'' if times == 1 else times}/"
+                curr_piece = "d" 
+                times = 1
             else:
-                string += f"{substring}{times}/"
-                substring = ""
-                times = 0
+                print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, pieces.king):
-            if "a" in substring:
+            if curr_piece == "a" or curr_piece == "":
+                curr_piece = "a"
                 times += 1
-            elif substring == "":
-                substring = f"a{piece.color[0]}"
-                times += 1
+                color = "w" if piece.color == "white" else "s"
+            elif curr_piece != "a":
+                string += f"{curr_piece}{color}{'' if times == 1 else times}/"
+                curr_piece = "a" 
+                times = 1
             else:
-                string += f"{substring}{times}/"
-                substring = ""
-                times = 0
-        return f"{substring,}"
+                print(f"curr_piece: {curr_piece} times: {times}")
+    string += f"{curr_piece}{color}{'' if times == 1 else times}/"
+    return string
+
+print(get_string_from_board())
 
 storage = None
 oldsquare = 0
