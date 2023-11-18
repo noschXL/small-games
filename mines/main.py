@@ -7,7 +7,9 @@ empty = pygame.image.load("img/empty.png")
 clock = pygame.time.Clock()
 colors = [(144, 238, 144),(255,0,0)]
 
-wn = pygame.display.set_mode((512,512))
+rows, cols = 8,8
+
+wn = pygame.display.set_mode((cols * 32 + 100,rows * 32))
 
 def changColor(image, color):
     colouredImage = pygame.Surface(image.get_size())
