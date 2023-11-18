@@ -28,7 +28,7 @@ music = ["snd/1.mp3","snd/2.mp3","snd/3.mp3"]
 
 pathdir = os.path.dirname(os.path.abspath(__file__))
 
-start_pos = "ts/ks/ls/ds/as/ls/ks/ts/b8/e32/bw8/tw/kw/lw/dw/aw/lw/kw/tw/" # b = pawn, t = rook, k = knight, l = bishop, d = queen, a = king, e = empty, w = white, s = black
+start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs8/e32/bw8/tw/kw/lw/dw/aw/lw/kw/tw/" # b = pawn, t = rook, k = knight, l = bishop, d = queen, a = king, e = empty, w = white, s = black
 
 
 class SpriteSheet:
@@ -439,14 +439,14 @@ def set_board_from_string(string):
 set_board_from_string(start_pos)
 
 def get_string_from_board():
-    color = None
+    color = ""
     times = 0
     string = ""
     curr_piece = ""
     for square in squares.fields:
         piece = square.get_piece()
         if piece is None:
-            if curr_piece == "e" or curr_piece == "":
+            if curr_piece == "e":
                 curr_piece = "e"
                 color = ""
                 times += 1
@@ -460,72 +460,71 @@ def get_string_from_board():
             if curr_piece == "b" or curr_piece == "":
                 curr_piece = "b"
                 times += 1
-                color = "w" if piece.color == "white" else "s"
             elif curr_piece != "b":
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "b"
+                color = "w" if piece.color == "white" else "s"
                 times = 1
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, pieces.knight):
-            if curr_piece == "k" or curr_piece == "":
+            if curr_piece == "k":
                 curr_piece = "k"
                 times += 1
-                color = "w" if piece.color == "white" else "s"
             elif curr_piece != "k":
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "k"
+                color = "w" if piece.color == "white" else "s"
                 times = 1
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, pieces.bishop):
-            if curr_piece == "l" or curr_piece == "":
+            if curr_piece == "l" :
                 curr_piece = "l"
                 times += 1
-                color = "w" if piece.color == "white" else "s"
             elif curr_piece != "l":
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "l"
+                color = "w" if piece.color == "white" else "s"
                 times = 1
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, pieces.rook):
-            if curr_piece == "t" or curr_piece == "":
+            if curr_piece == "t" :
                 curr_piece = "t"
                 times += 1
-                color = "w" if piece.color == "white" else "s"
             elif curr_piece != "t":
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
-                curr_piece = "t" 
+                curr_piece = "t"
+                color = "w" if piece.color == "white" else "s"
                 times = 1
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, pieces.queen):
-            if curr_piece == "d" or curr_piece == "":
+            if curr_piece == "d" :
                 curr_piece = "d"
                 times += 1
-                color = "w" if piece.color == "white" else "s"
             elif curr_piece != "d":
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "d" 
+                color = "w" if piece.color == "white" else "s"
                 times = 1
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, pieces.king):
-            if curr_piece == "a" or curr_piece == "":
+            if curr_piece == "a" :
                 curr_piece = "a"
                 times += 1
-                color = "w" if piece.color == "white" else "s"
             elif curr_piece != "a":
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "a" 
+                color = "w" if piece.color == "white" else "s"
                 times = 1
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
     string += f"{curr_piece}{color}{'' if times == 1 else times}/"
     return string
 
-print(get_string_from_board())
 
 storage = None
 oldsquare = 0
@@ -534,6 +533,11 @@ while running:
     for field in squares.fields:
         field.draw()
         
+    pygame.key.set_repeat()
+    key = pygame.key.get_pressed()
+    if key[pygame.K_g]:
+        print(get_string_from_board())
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
