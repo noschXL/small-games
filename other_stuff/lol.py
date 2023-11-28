@@ -1,12 +1,6 @@
-class testclass1:
-        def testfunc1(self):
-            print(f"test accomplished with number {self.number}")
-            
-
-
-class testclass2(testclass1):
-    def __init__(self, number):
-        self.number = number
-
-testobj = testclass2(42)
-testobj.testfunc1()
+import time 
+time.sleep(1)
+start = time.perf_counter()
+time.sleep(4)
+end = time.perf_counter()
+print(end - start)

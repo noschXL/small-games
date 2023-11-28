@@ -24,9 +24,9 @@ running = True
 wh_bl = 0
 current_player = "white"  # Variable to track the current player's turn
 
-music = ["snd/1.mp3","snd/2.mp3","snd/3.mp3"]
+music = ["\snd\\1.mp3","\snd\\2.mp3","\snd\\3.mp3"]
 
-pathdir = os.path.dirname(os.path.abspath(__file__))
+pathdir = os.path.abspath(__file__)
 
 start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs8/e32/bw8/tw/kw/lw/dw/aw/lw/kw/tw/" # b = pawn, t = rook, k = knight, l = bishop, d = queen, a = king, e = empty, w = white, s = black
 
@@ -35,7 +35,7 @@ class SpriteSheet:
 
     def __init__(self, filename):
         """Load the sheet."""
-        self.spritepath = os.path.join(pathdir,'img',filename)
+        self.spritepath = os.path.join(pathdir,'..','img',filename)
         try:
             self.sheet = pygame.image.load(self.spritepath).convert()
         except pygame.error as e:
@@ -585,7 +585,7 @@ while running:
                         storage = None
                         current_player = "black" if current_player == "white" else "white"
                         Square.fields[oldsquare].reset_color()
-                        pygame.mixer.music.load(os.path.join(pathdir, music[random.randint(0, 2)]))
+                        pygame.mixer.music.load(pathdir +'\\..\\'+ music[random.randint(0, 2)])
                         pygame.mixer.music.play()
                     elif clicked_piece is not None and clicked_piece.color == current_player:
                         # select
