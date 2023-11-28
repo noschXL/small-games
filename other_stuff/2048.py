@@ -7,9 +7,9 @@ sq_color = (211,211,211)
 
 number_font  = pygame.font.SysFont( None, 150 )                # Default font, Size 128
 class square:
-    squares = []
+    Square = []
     def __init__(self):
-        self.pos = len(square.squares)
+        self.pos = len(square.Square)
         self.x = self.pos % 4
         self.y = self.pos // 4
         self.number = None
@@ -20,7 +20,7 @@ class square:
         self.number = number
 
     def get_square(pos):
-        return square.squares[pos]
+        return square.Square[pos]
     
     def get_pos(self):
         return self.pos
@@ -45,10 +45,10 @@ pygame.draw.rect(wn, bg_color,(0,0,650,740))
 
 
 for i in range(16):
-    square.squares.append(square())
+    square.Square.append(square())
 
 def draw_squares():
-    for sq in square.squares:
+    for sq in square.Square:
         sq.draw()
 
 def check_exit():
@@ -83,7 +83,7 @@ def move_up():
                         moved = True  # A move was made
                         break
                     elif next_sq.get_number() == current_sq.get_number():
-                        # Merge squares with the same number
+                        # Merge Square with the same number
                         next_sq.set_number(next_sq.get_number() * 2)
                         current_sq.set_number(None)
                         moved = True  # A move was made
@@ -109,7 +109,7 @@ def move_down():
                         moved = True  # A move was made
                         break
                     elif next_sq.get_number() == current_sq.get_number():
-                        # Merge squares with the same number
+                        # Merge Square with the same number
                         next_sq.set_number(next_sq.get_number() * 2)
                         current_sq.set_number(None)
                         moved = True  # A move was made
@@ -135,7 +135,7 @@ def move_left():
                         moved = True  # A move was made
                         break
                     elif next_sq.get_number() == current_sq.get_number():
-                        # Merge squares with the same number
+                        # Merge Square with the same number
                         next_sq.set_number(next_sq.get_number() * 2)
                         current_sq.set_number(None)
                         moved = True  # A move was made
@@ -161,7 +161,7 @@ def move_right():
                         moved = True  # A move was made
                         break
                     elif next_sq.get_number() == current_sq.get_number():
-                        # Merge squares with the same number
+                        # Merge Square with the same number
                         next_sq.set_number(next_sq.get_number() * 2)
                         current_sq.set_number(None)
                         moved = True  # A move was made
@@ -173,7 +173,7 @@ def move_right():
         new_move()
 
 def new_move():
-    empty_sq = [sq.get_pos() for sq in square.squares if sq.get_number() is None]
+    empty_sq = [sq.get_pos() for sq in square.Square if sq.get_number() is None]
     chosen_sq = random.choice(empty_sq)
     luck = random.randint(0,10)
     new_number = 4 if luck == 0 else 2
