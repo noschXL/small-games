@@ -1,31 +1,11 @@
-import pygame
-from sys import exit
+import random
 
+map = [ [0 for _ in range(5)] for _ in range(5)]
 
-pygame.init()
-wn = pygame.display.set_mode((600, 600))
-clock = pygame.time.Clock()
-font = pygame.font.SysFont('arial', 16)
+# define start
+map[0][3] = 2
+#define end
+map[4][3] = 3
 
-
-
-def display(number, location):
-    text = font.render(str(number), True, (255, 255, 255))
-    text_rect = text.get_rect(center=location)
-    pygame.draw.rect(wn, (209, 188, 138), text_rect)  # Fill background rectangle
-    wn.blit(text, text_rect.topleft)
-    pygame.display.update(text_rect)
-
-
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
-
-        wn.fill((209, 188, 138)) 
-        display(6, (300,300))
-
-
-        pygame.display.update()
-        clock.tick(60)
+for i in range(5):
+    print(str(map[i]))

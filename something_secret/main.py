@@ -10,15 +10,7 @@ wn = pygame.display.set_mode((WIDTH,HEIGHT))
 dir = os.path.dirname(os.path.abspath(__file__))
 font = pygame.font.Font(os.path.join(dir, 'img', 'font.ttf'))
 
-def changeColor(image, color):
-    colouredImage = pygame.Surface(image.get_size())
-    colouredImage.fill(color)
-    
-    finalImage = image.copy()
-    finalImage.blit(colouredImage, (0, 0), special_flags = pygame.BLEND_MULT)
-    return finalImage
-
-def load_img(file):
+def load_img(file): 
         img = pygame.image.load(os.path.join(dir, 'img', f'{file}.png'))
         print(f"loaded img: {file}")
         return img
@@ -27,8 +19,9 @@ def get_dist(loc1, loc2):
     math.sqrt((abs(loc1[0] - loc2[0]) ** 2 + (loc1[1] - loc2[1])) ** 2)
 
 def draw():
-    wn.fill((209, 188, 138))
-    for mob in mobs:
+    wn.fill((209, 188, 138)),
+    draw_coins(slime_drops, (300,0), coin_imgs[0])
+    for mob in slm_drp_lst + mobs:
         if mob is None:
             continue
         mob.draw()
@@ -39,24 +32,113 @@ slime_imgs = [load_img("friendly_slime"),
           load_img("dead_slime"),
           load_img("flashy_slime")]
 
+coin_imgs = [load_img("slime_drop")]
+
 heart_imgs = [load_img("full_heart"),
               load_img("empty_heart")]
 
+munition_imgs = [load_img("arrow")]
 
-def display( number, location):
-        text = font.render(str(number), True, (255, 255, 255))
-        text_rect = text.get_rect(center=location)
+button_imgs = [load_img("old_button")]
+
+def display( text, location, size = 1, color = (0,0,0)):
+        text = font.render(str(text), True, color)
+        text_rect = text.get_rect(topleft= location)
         text_surface = pygame.Surface((text_rect.width, text_rect.height), pygame.SRCALPHA)
         text_surface.blit(text, (0, 0))
-        wn.blit(text_surface, text_rect.topleft)
+        wn.blit(pygame.transform.scale_by(text_surface, size), text_rect.topleft)
+
+def get_text_width( text, scale = 1):
+        text = font.render(str(text), True, (0,0,0))
+        text_rect = text.get_rect()
+        text_surface = pygame.Surface((text_rect.width, text_rect.height), pygame.SRCALPHA)
+        text_surface.blit(text, (0, 0))
+        return pygame.transform.scale_by(text_surface, scale).get_width()
+
+def draw_coins(coins, location, sprite: pygame.Surface):
+    width = sprite.get_rect().width
+    wn.blit(pygame.transform.scale(sprite, (32,32)),location)
+    display(coins, (location[0] + width, location[1]), 2)
+
+def draw_hearts(hp,full, location):
+    width = pygame.mask.from_surface( pygame.transform.scale(heart_imgs[0], (32,32))).get_size()[0] - 10
+    for hrt_cnt in range(hp):
+        wn.blit(pygame.transform.scale(heart_imgs[0], (32,32)),(location[0] + width * hrt_cnt, location[1]))
+    for hrt_cnt in range(full - hp):
+        wn.blit(pygame.transform.scale(heart_imgs[1], (32,32)),(location[0] + width * hrt_cnt + width * hp, location[1]))
+
 
 #----------------------------------------------
 #-------------------CLASSES--------------------
 #----------------------------------------------
 
-class Coin:
-    def __init__(self, loc , value):
+class Shot:
+    def __init__ (self, loc, vel, sprite = munition_imgs[0], homing = False, homing_dur = 3,  size = (16,16)):
+        self.loc = pygame.Vector2(loc)
+        self.vel = vel
+        self.homing = homing
+        self.homing_dur = homing_dur
+        self.timer = Timer(self.homing_off)
+        if not self.homing:
+            self.timer.start
+        self.sprite = sprite
+        self.sprite = pygame.transform.scale(self.sprite, size)
+        self.rect = self.sprite.get_rect()
+        self.mask = pygame.mask.from_surface(self.sprite)
+    
+    def update(self, pos):
+        if self.homing:
+            move_to = [self.loc.x - pos[0], self.loc.y - pos[1]]
+            self.loc.x -= move_to[0] / 10
+            self.loc.y -= move_to[1] / 10
+        else:
+            self.loc.x += self.vel[0]
+            self.loc.y += self.vel[1]
+
+    def draw(self):
+        wn.blit(self.sprite, self.loc.xy)    
+
+    def homing_off(self):
+        self.homing = False
+
+class Button:
+    def __init__(self,loc, func, img_nmbr = 0, scale = (32, 32)):
+        self.sprite = button_imgs[0]
+        self.sprite = pygame.transform.scale(self.sprite, scale)
+        self.mask = pygame.mask.from_surface(self.sprite)
         self.loc = loc
+        self.func = func
+
+    def draw(self):
+        wn.blit(self.sprite, self.loc)
+
+    def hit(self, useless1, useless2):
+        self.func()
+
+class Coin:
+    def __init__(self, loc , value, type = 0):
+        self.loc = loc
+        self.value = value
+        self.type = type
+        self.sprite = coin_imgs[self.type]
+        self.sprite = pygame.transform.scale(self.sprite, (25,25))
+        self.rect = self.sprite.get_rect()
+        self.rect.topleft = loc
+        self.mask = pygame.mask.from_surface(self.sprite)
+        self.id = len(slm_drp_lst)
+
+    def draw(self):
+        wn.blit(self.sprite, self.loc)
+
+    def hit(self, useless, useless2):
+        global slime_drops
+        slm_drp_lst[self.id] = None
+        slime_drops += self.value
+
+    def update(self, pos):
+        move_to = [self.loc.x - pos [0], self.loc.y - pos[1]]
+        self.loc.x -= move_to[0] / 10
+        self.loc.y -= move_to[1] / 10
 
 class Mob:
     def __init__(self, loc):
@@ -67,9 +149,9 @@ class Mob:
         self.dmg_timer = Timer(self.draw_dmg_off)
         self.loc = pygame.Vector2(loc)
         self.vel = pygame.Vector2()
-        self.status = 0
+        self.status = random.randint(0,1)
         self.timer = Timer(self.timer_done)
-        self.timer.start(3)
+        self.timer.start(3 + random.uniform(-1.0, 1.0)) if self.status == 0 else self.timer.start(1 + random.uniform(-1.0, 1.0))
         self.inv_timer = Timer(self.flash)
         self.invulnerable = False
         self.got_flashed = 0
@@ -105,7 +187,7 @@ class Mob:
     def flash(self):
         pass
 
-    def update(self):
+    def update(self, pos):
         self.timer.update()
         self.inv_timer.update()
         self.dmg_timer.update()
@@ -133,9 +215,7 @@ class Mob:
         self.vel.x *= 0.85
         self.vel.y *= 0.85
 
-
     def move_in_place(self, rect: pygame.Rect):
-        #x_mov = (self.rect.x + self.rect.width) if self.loc.x < rect.x else self
         move_point = (self.loc.x - rect[0], self.loc.y - rect[1])
         move_dist =  0.55 / math.sqrt((self.loc.x - rect[0]) ** 2 + (self.loc.y - rect[1]) ** 2)
         self.vel.move_towards_ip(move_point, move_dist)
@@ -148,7 +228,7 @@ class Slime(Mob):
         self.rect = self.sprite.get_rect()
         self.rect.topleft = loc
         self.mask = pygame.mask.from_surface(self.sprite)
-        self.hp = 10 * self.size
+        self.hp = 20 * self.size
 
     def after_timer(self):
         self.sprite = self.new_sprite()
@@ -196,11 +276,18 @@ class Slime(Mob):
                 self.move_in_place(pos)
 
     def onkill(self):
-        if self.size > 1:
+        if self.size == 1:
+            slm_drp_lst.append(Coin(self.loc, random.randint(1,2)))
+        elif self.size > 1:
             mobs.append(Slime((self.loc.x + random.uniform(-1.0, 1.0),self.loc.y + random.uniform( a = -1.0,b =  1.0)), self.size - 1))
             mobs.append(Slime((self.loc.x + random.uniform(-1.0, 1.0),self.loc.y + random.uniform(a = -1.0,b = 1.0)), self.size - 1))
             mobs.append(Slime((self.loc.x + random.uniform(-1.0, 1.0),self.loc.y + random.uniform(a = -1.0,b = 1.0)), self.size - 1))
         self.kill()
+
+    def shoot(self):
+        move_to = [self.loc.x - pygame.mouse.get_pos()[0], self.loc.y - pygame.mouse.get_pos()[0]]
+        self.loc.x -= move_to[0] / 10
+        self.loc.y -= move_to[1] / 10
 
 class Timer:
     def __init__(self, func):
@@ -236,18 +323,18 @@ class Wave:
             mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
             for i, mob in enumerate(mobs):
                 try:
-                    print("tried")
-                    if mob is None: continue
+                    if mob is None or mobs[i + 1] is None: 
+                        continue
                     mob.move_in_place(mobs[i+1].rect)
                 except IndexError as e:
-                    print(f"didnt_work :( because of {e}")
+                    pass
 
     def empty(self):
         gen = (mob for mob in mobs if mob != None)
         if list(gen) == []: return True
         else: return False
 
-class Game:
+class Slime_minigame:
 
     def __init__(self):
         self.wave_cnt = 1 # cnt means count
@@ -256,19 +343,31 @@ class Game:
         self.mouse_sprite = pygame.transform.scale(load_img("sword"), (64,64))
         self.mouse_mask = pygame.mask.from_surface(self.mouse_sprite)
         self.mouse_rect = self.mouse_mask.get_rect()
+        self.mouse_pos = (0,0)
         self.damage = 6
         self.hp = 3
+        self.full_hp = 3
         self.fps = 60
+        self.restart_button = Button((300 - 32 * 3, 300), self.restart, 0, (64  * 3, 64))
         pygame.mouse.set_visible(False)
 
     def check_collisions(self):
-        for mob in mobs:
+        for mob in mobs + slm_drp_lst:
             if mob is None:
                 continue
             if pygame.Rect.colliderect(mob.sprite.get_rect(), self.mouse_rect):
                 offset = [mob.loc[0] - self.mouse_pos[0], mob.loc[1] - self.mouse_pos[1]]
                 if self.mouse_mask.overlap(mob.mask, offset):
+                    if isinstance(mob, Slime) and mob.status == 2:
+                        self.hp -= 1
                     mob.hit(self.damage, self.mouse_pos)
+
+    def check_pressed(self, obj):
+        if pygame.mouse.get_pressed(num_buttons= 5)[0]:
+            if pygame.Rect.colliderect(obj.sprite.get_rect(), self.mouse_rect):
+                offset = [obj.loc[0] - self.mouse_pos[0], obj.loc[1] - self.mouse_pos[1]]
+                if self.mouse_mask.overlap(obj.mask, offset):
+                    obj.hit(self.damage, self.mouse_pos)
 
     def update(self, now):
         if now:
@@ -277,32 +376,62 @@ class Game:
                         pygame.quit()
                         sys.exit()
             wn.fill((209,188,138))
-
-            for mob in mobs:
+            for mob in mobs + slm_drp_lst:
                 if mob is None:
                     continue
-                mob.update()
+                mob.update((self.mouse_pos[0] + self.mouse_rect.width / 2, self.mouse_pos[1] + self.mouse_rect.height / 2))
 
-    def mouse_parsing(self):
+    def mouse_parsing(self, coll_check = True):
         self.mouse_pos = pygame.mouse.get_pos()
         wn.blit(self.mouse_sprite,  self.mouse_pos)
-        self.check_collisions()
+        if coll_check:
+            self.check_collisions()
 
     def run(self):
-        while True:
-            now = True
+        self.running = True
+        while self.running:
             if self.wave.empty():
                 self.wave = Wave(self.wave_cnt)
-
-            self.update(now)
+            self.update(True)
             draw()
+            draw_hearts(self.hp, self.full_hp, (0,0))
             self.mouse_parsing()
+            self.check_kill()
             self.clock.tick(self.fps)
             pygame.display.flip()
 
+        while not self.running:
+            wn.fill((0,0,0))
+            display("You Died", (300 - get_text_width("You Died",4) / 2, 100), size= 4, color = (255,255,255))
+            self.restart_button.draw()
+            display("Restart", (300 + 50 - get_text_width("Restart",4) / 2, 300 + 20), size= 2, color = (255,255,255))
+            self.check_pressed(self.restart_button)
+            self.mouse_parsing(coll_check=False)
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            self.clock.tick(self.fps)
+
+
+    def check_kill(self):
+        if self.hp <= 0:
+            self.running = False
+            
+    def restart(self):
+        global slime_drops
+        self.__init__()
+        mobs.clear()
+        shots.clear()
+        slm_drp_lst.clear()
+        slime_drops = 0
+        self.run()
 
 if __name__ == '__main__':
     mobs = []
-    money = 0
-    game = Game()
+    shots = []
+    slime_drops = 0
+    slm_drp_lst = [] # slime_drop_list
+    game = Slime_minigame()
     game.run()
