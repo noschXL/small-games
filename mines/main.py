@@ -3,13 +3,13 @@ from Spritesheet import *
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%i,%i" % (600,300)
 os.environ['SDL_VIDEO_CENTERED'] = '0'
 pygame.init()
-empty = pygame.image.load("img/empty.png")
+empty = pygame.image.load(os.path.abspath((__file__) + '/../img/empty.png'))
 clock = pygame.time.Clock()
 colors = [(144, 238, 144),(255,0,0)]
 
 rows, cols = 8,8
 
-wn = pygame.display.set_mode((cols * 32 + 100,rows * 32))
+wn = pygame.display.set_mode((cols * 32,rows * 32 + 50))
 
 def changColor(image, color):
     colouredImage = pygame.Surface(image.get_size())
