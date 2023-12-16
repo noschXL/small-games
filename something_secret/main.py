@@ -21,10 +21,15 @@ def get_dist(loc1, loc2):
 def draw():
     wn.fill((209, 188, 138)),
     draw_coins(slime_drops, (300,0), coin_imgs[0])
-    for mob in slm_drp_lst + mobs:
+    for mob in slm_drp_lst + mobs + animations:
         if mob is None:
             continue
         mob.draw()
+
+def animate(loc, id, secs):
+    anim = Animation(loc, id, secs)
+    animations.append(anim)
+    return anim
 
 slime_imgs = [load_img("friendly_slime"),
           load_img("raged_slime"),
@@ -40,6 +45,7 @@ heart_imgs = [load_img("full_heart"),
 munition_imgs = [load_img("arrow")]
 
 button_imgs = [load_img("old_button")]
+
 
 def display( text, location, size = 1, color = (0,0,0)):
         text = font.render(str(text), True, color)
@@ -71,6 +77,64 @@ def draw_hearts(hp,full, location):
 #----------------------------------------------
 #-------------------CLASSES--------------------
 #----------------------------------------------
+
+class SpriteSheet:
+
+    def __init__(self, filename):
+        """Load the sheet."""
+        self.spritepath = os.path.join(dir,'','img',filename)
+        try:
+            self.sheet = pygame.image.load(self.spritepath).convert()
+            print(f"loaded img: {filename}")
+        except pygame.error as err:
+            print(f"Unable to load spritesheet image: {filename}")
+            raise SystemExit(err)
+
+    def image_at(self, rectangle, colorkey = (0,0,0)):
+        """Load a specific image from a specific rectangle."""
+        # Loads image from x, y, x+offset, y+offset.
+        rect = pygame.Rect(rectangle)
+        image = pygame.Surface(rect.size).convert()
+        image.blit(self.sheet, (0, 0), rect)
+        if colorkey is not None:
+            if colorkey == -1:
+                colorkey = image.get_at((0,0))
+            image.set_colorkey(colorkey, pygame.RLEACCEL)
+        return image
+
+animation_sheets = [SpriteSheet("slash.png")]
+
+class Animation:
+    def __init__(self, loc, id, secs):
+        self.loc = loc
+        self.ps = len(animations) - 1
+        self.id = id
+        self.fps = secs
+        self.frame = 0
+        self.img = pygame.transform.scale(animation_sheets[self.id].image_at((self.frame * 16, 0, 16,16)), (48,48))
+        self.time_between_frames = 1 / self.fps #time between frames in secs
+        self.timer = Timer(self.new_frame)
+        self.timer.start(self.time_between_frames)
+
+    def new_frame(self):
+        self.frame += 1
+        if self.frame > 5:
+            self.timer.stop()
+            self.img = pygame.Surface((0,0))
+            self.kill()
+        else:
+            self.img = pygame.transform.scale(animation_sheets[self.id].image_at((self.frame * 16, 0, 16,16)), (48,48))
+            self.timer.start(self.time_between_frames)
+
+    def update(self , *args):
+        self.timer.update()
+
+    def draw(self):
+        wn.blit(self.img, (self.loc))
+
+    def kill(self):
+        animations[self.ps] = None
+
 
 class Shot:
     def __init__ (self, loc, vel, sprite = munition_imgs[0], homing = False, homing_dur = 3,  size = (16,16)):
@@ -265,6 +329,7 @@ class Slime(Mob):
                 self.sprite = self.new_sprite()
                 self.timer = Timer(self.onkill)
                 self.timer.start(0.5)
+                self.animation.kill()
             else:
                 self.invulnerable = True
                 self.timer.stop()
@@ -272,6 +337,7 @@ class Slime(Mob):
                 self.dmg_loc = self.rect.topright
                 self._draw_dmg = True
                 self.dmg_timer.start(1)
+                self.animation = animate(self.loc, 0, 45)
                 self.flash()
                 self.move_in_place(pos)
 
@@ -311,16 +377,8 @@ class Timer:
 class Wave:
     def __init__(self, wave):
         if wave == 1:
-            mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
-            mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
-            mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
-            mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
-            mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
-            mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
-            mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
-            mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
-            mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
-            mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
+            for i in range(10):
+                mobs.append(Slime((300 + random.uniform(-1, 1), 300 + random.uniform(-1,1)), 2))
             for i, mob in enumerate(mobs):
                 try:
                     if mob is None or mobs[i + 1] is None: 
@@ -376,7 +434,7 @@ class Slime_minigame:
                         pygame.quit()
                         sys.exit()
             wn.fill((209,188,138))
-            for mob in mobs + slm_drp_lst:
+            for mob in mobs + slm_drp_lst + animations:
                 if mob is None:
                     continue
                 mob.update((self.mouse_pos[0] + self.mouse_rect.width / 2, self.mouse_pos[1] + self.mouse_rect.height / 2))
@@ -431,6 +489,7 @@ class Slime_minigame:
 if __name__ == '__main__':
     mobs = []
     shots = []
+    animations = []
     slime_drops = 0
     slm_drp_lst = [] # slime_drop_list
     game = Slime_minigame()
