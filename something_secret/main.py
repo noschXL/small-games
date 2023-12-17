@@ -282,7 +282,7 @@ class Mob:
     def move_in_place(self, rect: pygame.Rect):
         move_point = (self.loc.x - rect[0], self.loc.y - rect[1])
         move_dist =  0.55 / math.sqrt((self.loc.x - rect[0]) ** 2 + (self.loc.y - rect[1]) ** 2)
-        self.vel.move_towards_ip(move_point, move_dist)
+        self.vel.move_towards_ip(move_point, move_dist * 1.5)
 
 class Slime(Mob):
     def __init__(self, loc, size = 1):
