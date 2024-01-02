@@ -4,7 +4,8 @@ pygame.init()
 
 WIDTH = 600
 HEIGHT = 600
-
+SWORD = 1
+BOW = 2
 
 wn = pygame.display.set_mode((WIDTH,HEIGHT))
 dir = os.path.dirname(os.path.abspath(__file__))
@@ -176,7 +177,7 @@ class Button:
     def draw(self):
         wn.blit(self.sprite, self.loc)
 
-    def hit(self, useless1, useless2):
+    def hit(self, *args):
         self.func()
 
 class Coin:
@@ -194,7 +195,7 @@ class Coin:
     def draw(self):
         wn.blit(self.sprite, self.loc)
 
-    def hit(self, useless, useless2):
+    def hit(self, *args):
         global slime_drops
         slm_drp_lst[self.id] = None
         slime_drops += self.value
@@ -399,9 +400,12 @@ class Slime_minigame:
         self.clock = pygame.time.Clock()
         self.wave = Wave(self.wave_cnt)
         self.mouse_sprite = pygame.transform.scale(load_img("sword"), (64,64))
-        self.mouse_mask = pygame.mask.from_surface(self.mouse_sprite)
+        self.mouse_mask = pygame.mask.from_surface(self.mouse_sprite)    
         self.mouse_rect = self.mouse_mask.get_rect()
         self.mouse_pos = (0,0)
+        self.mouse_status = SWORD
+        self.mouse_switch_enabled = True
+        self.mouse_switch = Timer(self.enable_switching)
         self.damage = 6
         self.hp = 3
         self.full_hp = 3
@@ -419,6 +423,10 @@ class Slime_minigame:
                     if isinstance(mob, Slime) and mob.status == 2:
                         self.hp -= 1
                     mob.hit(self.damage, self.mouse_pos)
+
+    def enable_switching(self):
+        self.mouse_switch_enabled = True
+        self.mouse_switch.stop()
 
     def check_pressed(self, obj):
         if pygame.mouse.get_pressed(num_buttons= 5)[0]:
@@ -438,12 +446,23 @@ class Slime_minigame:
                 if mob is None:
                     continue
                 mob.update((self.mouse_pos[0] + self.mouse_rect.width / 2, self.mouse_pos[1] + self.mouse_rect.height / 2))
+                self.mouse_switch.update()
 
     def mouse_parsing(self, coll_check = True):
         self.mouse_pos = pygame.mouse.get_pos()
         wn.blit(self.mouse_sprite,  self.mouse_pos)
         if coll_check:
             self.check_collisions()
+        if pygame.mouse.get_pressed(num_buttons=5 )[2] and self.mouse_status == SWORD and self.mouse_switch_enabled:
+            self.mouse_sprite = pygame.transform.scale(load_img("bow"), (64,64))
+            self.mouse_status = BOW
+            self.mouse_switch_enabled = False
+            self.mouse_switch.start(1)
+        elif pygame.mouse.get_pressed(num_buttons=5 )[2] and self.mouse_status == BOW and self.mouse_switch_enabled:
+            self.mouse_sprite = pygame.transform.scale(load_img("sword"), (64,64))
+            self.mouse_status = SWORD
+            self.mouse_switch_enabled = False
+            self.mouse_switch.start(1)
 
     def run(self):
         self.running = True
