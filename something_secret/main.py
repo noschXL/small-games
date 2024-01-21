@@ -80,7 +80,7 @@ class Shot:
         self.homing_dur = homing_dur
         self.timer = Timer(self.homing_off)
         if not self.homing:
-            self.timer.start
+            self.timer.start()
         self.sprite = sprite
         self.sprite = pygame.transform.scale(self.sprite, size)
         self.rect = self.sprite.get_rect()
@@ -337,10 +337,17 @@ class Wave:
 class Slime_minigame:
 
     def __init__(self):
+        self.cooldown = Timer(self.mode_switch_allow)
+        self.switch = True
+        self.rotation = 0
+        self.mode = 1
+        self.bow_active = False
         self.wave_cnt = 1 # cnt means count
         self.clock = pygame.time.Clock()
         self.wave = Wave(self.wave_cnt)
-        self.mouse_sprite = pygame.transform.scale(load_img("sword"), (64,64))
+        self.sword_sprite = pygame.transform.scale(load_img("sword"), (64,64))
+        self.bow_sprite = pygame.transform.scale(load_img("bow"), (64,64))
+        self.mouse_sprite = self.sword_sprite
         self.mouse_mask = pygame.mask.from_surface(self.mouse_sprite)
         self.mouse_rect = self.mouse_mask.get_rect()
         self.mouse_pos = (0,0)
@@ -351,7 +358,7 @@ class Slime_minigame:
         self.restart_button = Button((300 - 32 * 3, 300), self.restart, 0, (64  * 3, 64))
         pygame.mouse.set_visible(False)
 
-    def check_collisions(self):
+    def check_collisions(self, dmg_deal = True):
         for mob in mobs + slm_drp_lst:
             if mob is None:
                 continue
@@ -360,7 +367,12 @@ class Slime_minigame:
                 if self.mouse_mask.overlap(mob.mask, offset):
                     if isinstance(mob, Slime) and mob.status == 2:
                         self.hp -= 1
-                    mob.hit(self.damage, self.mouse_pos)
+                    if dmg_deal:
+                        mob.hit(self.damage, self.mouse_pos)
+                        
+    def mode_switch_allow(self):
+        self.switch = True
+        print("sure")
 
     def check_pressed(self, obj):
         if pygame.mouse.get_pressed(num_buttons= 5)[0]:
@@ -382,10 +394,43 @@ class Slime_minigame:
                 mob.update((self.mouse_pos[0] + self.mouse_rect.width / 2, self.mouse_pos[1] + self.mouse_rect.height / 2))
 
     def mouse_parsing(self, coll_check = True):
-        self.mouse_pos = pygame.mouse.get_pos()
-        wn.blit(self.mouse_sprite,  self.mouse_pos)
-        if coll_check:
-            self.check_collisions()
+        print(self.switch)
+        if self.mode == 0:
+            
+            self.mouse_pos = pygame.mouse.get_pos()
+            wn.blit(self.mouse_sprite,  self.mouse_pos)
+            
+            if coll_check:
+                self.check_collisions()
+                
+            if pygame.mouse.get_pressed(5)[2] and self.switch:
+                self.mode = 1
+                self.mouse_sprite = self.bow_sprite
+                self.switch = False
+                self.cooldown.start(1)
+                
+        if self.mode == 1:
+            
+            if self.bow_active:
+                pygame.mouse.set_pos(self.mouse_pos)
+                if pygame.mouse.get_pressed(5)[0]:
+                    heading = [math.cos(self.rotation), math.sin(self.rotation)]
+                    shots.append(Shot(self.mouse_pos, heading, munition_imgs[0], size= (32,32)))
+                self.bow_active = False
+                self.rotation = 0
+                
+            elif self.bow_active:
+                if pygame.mouse.get_pressed(5)[0]:
+                    self.bow_active = True
+                
+                self.mouse_pos = pygame.mouse.get_pos()
+                wn.blit(self.mouse_sprite,  self.mouse_pos)
+                
+            if pygame.mouse.get_pressed(5)[2] and self.switch:
+                self.mode = 0
+                self.mouse_sprite = self.sword_sprite
+                self.switch = False
+                self.cooldown.start(1)
 
     def run(self):
         self.running = True

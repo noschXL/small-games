@@ -2,12 +2,38 @@ import pygame
 import os
 import time
 import sys
-import random
+import tkinter
+from tkinter import messagebox
 # Load pygame
 pygame.init()
 pygame.mixer.init()
 
+pathdir = os.path.dirname(os.path.abspath(__file__))
+
+start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs8/e32/bw8/tw/kw/lw/dw/aw/lw/kw/tw/" # b = pawn, t = rook, k = knight, l = bishop, d = queen, a = king, e = empty, w = white, s = black
+
+f = open(pathdir + "/save.dat", "a")
+f.close()
+f = open(pathdir + "/save.dat", "r")
+
+save_pos = f.read()
+f.close()
+
+if save_pos == "":
+    print("empty")
+
+print(pathdir + "/save.dat")
+
+def save(pos):
+    open(pathdir + "/save.dat", 'w').close()
+    f = open(pathdir + "/save.dat", "+a")
+    f.write(pos)
+    print(pos)
+    f.close
+
+
 select_color = pygame.Color(255, 247, 37)
+possible_color = pygame.Color(80, 150, 15)
 rook_loc = (0*15, 0, 15, 15)
 knight_loc = (1*15, 0, 15, 15)
 bishop_loc = (2*15, 0, 15, 15)
@@ -23,19 +49,14 @@ pygame.display.set_caption("chess (whites turn)")  # Set the initial caption
 running = True
 wh_bl = 0
 current_player = "white"  # Variable to track the current player's turn
-
 music = ["\snd\\1.mp3","\snd\\2.mp3","\snd\\3.mp3"]
-
-pathdir = os.path.abspath(__file__)
-
-start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs8/e32/bw8/tw/kw/lw/dw/aw/lw/kw/tw/" # b = pawn, t = rook, k = knight, l = bishop, d = queen, a = king, e = empty, w = white, s = black
 
 
 class SpriteSheet:
 
     def __init__(self, filename):
         """Load the sheet."""
-        self.spritepath = os.path.join(pathdir,'..','img',filename)
+        self.spritepath = os.path.join(pathdir, 'img', filename)
         try:
             self.sheet = pygame.image.load(self.spritepath).convert()
         except pygame.error as e:
@@ -59,6 +80,11 @@ class SpriteSheet:
 sheetblack = SpriteSheet("pieces_black_1.png")
 sheetwhite = SpriteSheet("pieces_white_1.png")
 
+class Timer():
+    def __init__(self, func):
+        self.func = func
+        self.running = False
+
 class Square:
     fields = []
 
@@ -75,7 +101,17 @@ class Square:
         self.originalcolor = self.color
 
     def draw(self):
-        pygame.draw.rect(wn, self.color, (self.x * 80, self.y * 80, self.width, self.height))
+        
+        if self.color == possible_color:
+            pygame.draw.rect(wn, self.originalcolor, (self.x * 80, self.y * 80, self.width, self.height))
+            s = pygame.Surface((self.width, self.height))
+            s.set_alpha(128)
+            s.fill(possible_color)
+            wn.blit(s, (self.x * 80, self.y * 80))
+        else:
+            pygame.draw.rect(wn, self.color, (self.x * 80, self.y * 80, self.width, self.height))
+
+            
         if self.piece is not None:
             wn.blit(self.piece.get_sprite(), (self.x * 80 + 5, self.y * 80 + 5))  # Offset the pawn sprite position
 
@@ -103,6 +139,7 @@ class pieces:
     def __init__(self, square, color):
         self.square = square
         self.color = color
+        self.has_moved = False
 
     def __str__(self):
         print(f"ich bin auf dem feld {self.square} und ich bin {self.color}")
@@ -114,6 +151,7 @@ class pieces:
 
     def get_sprite(self):
         return self.sprite
+    
 class pawn(pieces):
 
     def get_moves(self):
@@ -191,7 +229,6 @@ class rook(pieces):
             original_sprite = sheetwhite.image_at(rook_loc,colorkey =(0,0,0))
         resized_sprite = pygame.transform.scale(original_sprite, (70, 70))
         self.sprite = resized_sprite
-        
         self.has_moved = False
 
 
@@ -349,14 +386,14 @@ class king(pieces):
             if ll < 63:
                 if Square.fields[self.square + 1].get_piece() is None and Square.fields[self.square + 2].get_piece() is None:
                     piece = Square.fields[self.square + 3].get_piece()
-                    if  piece is not None and isinstance(piece, rook) and not rook.has_moved:
+                    if  piece is not None and isinstance(piece, rook) and not piece.has_moved:
                         moves.append(self.square + 2)
 
         # Long castling (queenside)
         if not self.has_moved:
             if Square.fields[self.square - 1].get_piece() is None and Square.fields[self.square - 2].get_piece() is None and Square.fields[self.square - 3].get_piece() is None:
                 piece = Square.fields[self.square - 4].get_piece()
-                if piece is not None and isinstance(piece, rook) and not rook.has_moved:
+                if piece is not None and isinstance(piece, rook) and not piece.has_moved:
                     moves.append(self.square - 2)
         return moves
 
@@ -382,6 +419,7 @@ for y in range(8):
     wh_bl = 1 - wh_bl
 
 def set_board_from_string(string):
+    global current_player
     pos = 0
     color = None
     piece = None
@@ -429,6 +467,12 @@ def set_board_from_string(string):
             case "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9":
                 times = times * 10
                 times += int(string[i])
+            case "p":
+                current_player = "white"
+            case "P":
+                current_player = "black"
+            case "-":
+                pass
             case _:
                 print(string[i])
                 print("ungültige position")
@@ -440,7 +484,38 @@ def set_board_from_string(string):
 
     pygame.display.flip()
 
-set_board_from_string(start_pos)
+def new_game():
+    global destroyed
+    set_board_from_string(start_pos)
+    top.destroy()
+    destroyed = True
+    
+def load_game():
+    global destroyed
+    if save_pos == "":
+        msg=messagebox.showinfo("Couldn't load", "the save.dat file is empty, the programm is shutting down.")
+        pygame.quit()
+        sys.exit()
+    else:
+        set_board_from_string(save_pos)
+        top.destroy()
+    destroyed = True
+destroyed = False
+top = tkinter.Tk(className= "Chess")
+top.geometry("200x200")
+B1 = tkinter.Button(top, text= "New Game", command= new_game)
+B1.place(x=50,y=50)
+B2 = tkinter.Button(top, text= "Load Game", command= load_game)
+B2.place(x = 50, y = 125)
+label1 = tkinter.Label(top, text = "press 'S' in an Game")
+label1.place(x=25,y = 150)
+label2 = tkinter.Label(top, text = "to save")
+label2.place(x=65,y = 175)
+top.mainloop()
+
+if top.state != 'normal' and not destroyed:
+        pygame.quit()
+        sys.exit()
 
 def get_string_from_board():
     color = ""
@@ -449,22 +524,23 @@ def get_string_from_board():
     curr_piece = ""
     for square in Square.fields:
         piece = square.get_piece()
+        if piece is not None:
+            piececolor = "w" if piece.color == "white" else "s"
         if piece is None:
             if curr_piece == "e":
                 curr_piece = "e"
                 color = ""
                 times += 1
             elif curr_piece != "e":
-                string += f"{curr_piece}{'' if times == 1 else times}/"
+                string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "e"
                 times = 1
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, pawn):
-            if curr_piece == "b" or curr_piece == "":
-                curr_piece = "b"
+            if curr_piece == "b" and color == piececolor:
                 times += 1
-            elif curr_piece != "b":
+            elif curr_piece != "b" or color != piececolor:
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "b"
                 color = "w" if piece.color == "white" else "s"
@@ -472,10 +548,10 @@ def get_string_from_board():
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, knight):
-            if curr_piece == "k":
+            if curr_piece == "k" and color == piececolor:
                 curr_piece = "k"
                 times += 1
-            elif curr_piece != "k":
+            elif curr_piece != "k" or color != piececolor:
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "k"
                 color = "w" if piece.color == "white" else "s"
@@ -483,10 +559,10 @@ def get_string_from_board():
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, bishop):
-            if curr_piece == "l" :
+            if curr_piece == "l" and color == piececolor:
                 curr_piece = "l"
                 times += 1
-            elif curr_piece != "l":
+            elif curr_piece != "l" or color != piececolor:
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "l"
                 color = "w" if piece.color == "white" else "s"
@@ -494,21 +570,21 @@ def get_string_from_board():
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, rook):
-            if curr_piece == "t" :
+            if curr_piece == "t" and color == piececolor:
                 curr_piece = "t"
                 times += 1
-            elif curr_piece != "t":
+            elif curr_piece != "t" or color != piececolor:
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "t"
                 color = "w" if piece.color == "white" else "s"
                 times = 1
             else:
-                print(f"curr_piece: {curr_piece} times: {times}")
+                print(f"curr_piece: {curr_piece} times: {times} color: {color}")
         elif isinstance(piece, queen):
-            if curr_piece == "d" :
+            if curr_piece == "d" and color == piececolor:
                 curr_piece = "d"
                 times += 1
-            elif curr_piece != "d":
+            elif curr_piece != "d" or color != piececolor:
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "d" 
                 color = "w" if piece.color == "white" else "s"
@@ -516,10 +592,10 @@ def get_string_from_board():
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
         elif isinstance(piece, king):
-            if curr_piece == "a" :
+            if curr_piece == "a" and color == piececolor:
                 curr_piece = "a"
                 times += 1
-            elif curr_piece != "a":
+            elif curr_piece != "a" or color != piececolor:
                 string += f"{curr_piece}{color}{'' if times == 1 else times}/"
                 curr_piece = "a" 
                 color = "w" if piece.color == "white" else "s"
@@ -527,7 +603,8 @@ def get_string_from_board():
             else:
                 print(f"curr_piece: {curr_piece} times: {times}")
     string += f"{curr_piece}{color}{'' if times == 1 else times}/"
-    return string
+    string += f"{'P' if current_player == 'black' else 'p'}"
+    return string[2:]
 
 
 storage = None
@@ -537,14 +614,16 @@ while running:
     for field in Square.fields:
         field.draw()
         
-    pygame.key.set_repeat()
-    key = pygame.key.get_pressed()
-    if key[pygame.K_g]:
-        print(get_string_from_board())
+    pygame.key.set_repeat(1000, 500 )
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN:
+            key = pygame.key.get_pressed()
+            if key[pygame.K_s]:
+                save(get_string_from_board())
+                msg=messagebox.showinfo("Chess","Game Saved")
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mousepos = pygame.mouse.get_pos()
             buttons = pygame.mouse.get_pressed(num_buttons=5)
@@ -570,6 +649,9 @@ while running:
                     storage = clicked_piece
                     Square.fields[square].set_color(select_color)
                     oldsquare = square
+                    
+                    for square in clicked_piece.get_moves():
+                        Square.fields[square].set_color(possible_color)
                 elif storage is not None:
                     if clicked_piece is None and square in storage.get_moves():
                         # move
@@ -577,26 +659,32 @@ while running:
                         Square.fields[oldsquare].set_piece(None)
                         storage = None
                         current_player = "black" if current_player == "white" else "white"
-                        Square.fields[oldsquare].reset_color()
+                        for square in Square.fields:
+                            square.reset_color()
                     elif clicked_piece is not None and clicked_piece.color != current_player and square in storage.get_moves():
                         # attack
                         storage.set_square(square)
                         Square.fields[oldsquare].set_piece(None)
                         storage = None
                         current_player = "black" if current_player == "white" else "white"
-                        Square.fields[oldsquare].reset_color()
-                        pygame.mixer.music.load(pathdir +'\\..\\'+ music[random.randint(0, 2)])
-                        pygame.mixer.music.play()
+                        for square in Square.fields:
+                            square.reset_color()
+                        #pygame.mixer.music.load(pathdir +'\\..\\'+ music[random.randint(0, 2)])
+                        #pygame.mixer.music.play()
                     elif clicked_piece is not None and clicked_piece.color == current_player:
                         # select
                         storage = clicked_piece
-                        Square.fields[oldsquare].reset_color()
-                        Square.fields[square].set_color(select_color)
                         oldsquare = square
+                        for sq in Square.fields:
+                            sq.reset_color()
+                        for sq in clicked_piece.get_moves():
+                            Square.fields[sq].set_color(possible_color)
+                        Square.fields[square].set_color(select_color)
                     else:
                         # illegal move, reset selection
                         storage = None
-                        Square.fields[oldsquare].reset_color()
+                        for square in Square.fields:
+                            square.reset_color()
 
     pygame.display.flip()
 
