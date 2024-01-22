@@ -1,4 +1,5 @@
 import pygame
+import pygame_gui
 import os
 import time
 import sys
@@ -12,23 +13,13 @@ pathdir = os.path.dirname(os.path.abspath(__file__))
 
 start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs8/e32/bw8/tw/kw/lw/dw/aw/lw/kw/tw/" # b = pawn, t = rook, k = knight, l = bishop, d = queen, a = king, e = empty, w = white, s = black
 
-f = open(pathdir + "/save.dat", "a")
-f.close()
-f = open(pathdir + "/save.dat", "r")
+open(pathdir + "/save.dat", "a").close()
 
-save_pos = f.read()
-f.close()
-
-if save_pos == "":
-    print("empty")
-
-print(pathdir + "/save.dat")
 
 def save(pos):
     open(pathdir + "/save.dat", 'w').close()
     f = open(pathdir + "/save.dat", "+a")
     f.write(pos)
-    print(pos)
     f.close
 
 
@@ -43,14 +34,15 @@ pawn_loc = (5*15, 0, 15, 15)
 # Classes
 # Display
 WIDTH = 640
-HEIGHT = 640
+HEIGHT = 690
+manager = pygame_gui.UIManager((WIDTH, HEIGHT), pathdir + "/img/theme.json")
 wn = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("chess (whites turn)")  # Set the initial caption
 running = True
 wh_bl = 0
 current_player = "white"  # Variable to track the current player's turn
 music = ["\snd\\1.mp3","\snd\\2.mp3","\snd\\3.mp3"]
-
+clock = pygame.time.Clock()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
 
 class SpriteSheet:
 
@@ -85,19 +77,19 @@ class Timer():
         self.func = func
         self.running = False
 
-class Square:
+class Board:
     fields = []
 
     def __init__(self, x, y, colorblack, width, height):
-        self.x = x
-        self.y = y
+        self.x = x 
+        self.y = y 
         self.width = width
         self.height = height
         self.piece = None
         if colorblack:
-            self.color = pygame.Color(93, 50, 49)  # Color for black Square
+            self.color = pygame.Color(93, 50, 49)  # Color for black Board
         else:
-            self.color = pygame.Color(121, 72, 57, 255)  # Color for white Square
+            self.color = pygame.Color(121, 72, 57, 255)  # Color for white Board
         self.originalcolor = self.color
 
     def draw(self):
@@ -144,11 +136,6 @@ class pieces:
     def __str__(self):
         print(f"ich bin auf dem feld {self.square} und ich bin {self.color}")
 
-    def set_square(self, square):
-        Square.fields[self.square].set_piece(None)
-        Square.fields[square].set_piece(pawn(self.color, square))
-        self.square = square  # Update the current pawn's square
-
     def get_sprite(self):
         return self.sprite
     
@@ -161,27 +148,33 @@ class pawn(pieces):
 
         # Check the square in front
         front_square = self.square + direction * 8
-        if Square.fields[front_square].get_piece() is None:
+        if Board.fields[front_square].get_piece() is None:
             moves.append(front_square)
 
             # Check the square two steps ahead (only for pawns in starting position)
-            if self.square // 8 == starting_row and Square.fields[self.square + direction * 16].get_piece() is None:
+            if self.square // 8 == starting_row and Board.fields[self.square + direction * 16].get_piece() is None:
                 moves.append(self.square + direction * 16)
 
         # Check diagonally left
         if self.square % 8 != 0:
             left_diagonal = self.square + direction * 7
-            if Square.fields[left_diagonal].get_piece() is not None:
+            if Board.fields[left_diagonal].get_piece() is not None:
                 moves.append(left_diagonal)
 
         # Check diagonally right
         if self.square % 8 != 7:
             right_diagonal = self.square + direction * 9
-            if Square.fields[right_diagonal].get_piece() is not None:
+            if Board.fields[right_diagonal].get_piece() is not None:
                 moves.append(right_diagonal)
 
         return moves
 
+        
+
+    def set_square(self, square):
+        Board.fields[self.square].set_piece(None)
+        Board.fields[square].set_piece(pawn(self.color, square))
+        self.square = square  # Update the current pawn's square
 
     def __init__(self, color, square):
         super().__init__(square, color)
@@ -210,13 +203,13 @@ class knight(pieces):
             new_x, new_y = self.square % 8 + dx, self.square // 8 + dy
             if 0 <= new_x < 8 and 0 <= new_y < 8:
                 new_square = new_y * 8 + new_x
-                if Square.fields[new_square].get_piece() is None or Square.fields[new_square].get_piece().color != self.color:
+                if Board.fields[new_square].get_piece() is None or Board.fields[new_square].get_piece().color != self.color:
                     moves.append(new_square)
         return moves
     
     def set_square(self,square):
-        Square.fields[self.square].set_piece(None)
-        Square.fields[square].set_piece(knight(self.color, square))
+        Board.fields[self.square].set_piece(None)
+        Board.fields[square].set_piece(knight(self.color, square))
         self.square = square  # Update the current knight's square
 
 class rook(pieces):
@@ -242,9 +235,9 @@ class rook(pieces):
                 new_x, new_y = x + dx, y + dy
                 if 0 <= new_x < 8 and 0 <= new_y < 8:
                     new_square = new_y * 8 + new_x
-                    if Square.fields[new_square].get_piece() is None:
+                    if Board.fields[new_square].get_piece() is None:
                         moves.append(new_square)
-                    elif Square.fields[new_square].get_piece().color != self.color:
+                    elif Board.fields[new_square].get_piece().color != self.color:
                         moves.append(new_square)
                         break
                     else:
@@ -255,8 +248,8 @@ class rook(pieces):
         return moves
     
     def set_square(self,square):
-        Square.fields[self.square].set_piece(None)
-        Square.fields[square].set_piece(rook(self.color, square))
+        Board.fields[self.square].set_piece(None)
+        Board.fields[square].set_piece(rook(self.color, square))
         self.square = square  # Update the current rook's square
         self.has_moved = True
 
@@ -283,9 +276,9 @@ class bishop(pieces):
                 new_x, new_y = x + dx, y + dy
                 if 0 <= new_x < 8 and 0 <= new_y < 8:
                     new_square = new_y * 8 + new_x
-                    if Square.fields[new_square].get_piece() is None:
+                    if Board.fields[new_square].get_piece() is None:
                         moves.append(new_square)
-                    elif Square.fields[new_square].get_piece().color != self.color:
+                    elif Board.fields[new_square].get_piece().color != self.color:
                         moves.append(new_square)
                         break
                     else:
@@ -296,8 +289,8 @@ class bishop(pieces):
         return moves
     
     def set_square(self,square):
-        Square.fields[self.square].set_piece(None)
-        Square.fields[square].set_piece(bishop(self.color, square))
+        Board.fields[self.square].set_piece(None)
+        Board.fields[square].set_piece(bishop(self.color, square))
         self.square = square  # Update the current bishop's square
 
 class queen(pieces):
@@ -312,8 +305,8 @@ class queen(pieces):
         
 
     def set_square(self,square):
-        Square.fields[self.square].set_piece(None)
-        Square.fields[square].set_piece(queen(self.color, square))
+        Board.fields[self.square].set_piece(None)
+        Board.fields[square].set_piece(queen(self.color, square))
         self.square = square  # Update the current queens's square
 
 
@@ -327,9 +320,9 @@ class queen(pieces):
                 new_x, new_y = x + dx, y + dy
                 if 0 <= new_x < 8 and 0 <= new_y < 8:
                     new_square = new_y * 8 + new_x
-                    if Square.fields[new_square].get_piece() is None:
+                    if Board.fields[new_square].get_piece() is None:
                         moves.append(new_square)
-                    elif Square.fields[new_square].get_piece().color != self.color:
+                    elif Board.fields[new_square].get_piece().color != self.color:
                         moves.append(new_square)
                         break
                     else:
@@ -349,7 +342,8 @@ class king(pieces):
             original_sprite = sheetwhite.image_at(king_loc,colorkey =(0,0,0))
         resized_sprite = pygame.transform.scale(original_sprite, (70, 70))
         self.sprite = resized_sprite
-        
+        self.sc_possible = False
+        self.lc_possible = False
         self.has_moved = False
 
     def get_color(self):
@@ -358,12 +352,12 @@ class king(pieces):
 
 
     def set_square(self,square):
-        Square.fields[self.square].set_piece(None)
-        Square.fields[square].set_piece(king(self.color, square))
+        Board.fields[self.square].set_piece(None)
+        Board.fields[square].set_piece(king(self.color, square))
         if self.square + 2 == square:
-            Square.fields[square + 1].get_piece().set_square(square - 1)
+            Board.fields[square + 1].get_piece().set_square(square - 1)
         elif self.square - 2 == square:
-            Square.fields[square -2].get_piece().set_square(square + 1)
+            Board.fields[square -2].get_piece().set_square(square + 1)
             
         self.square = square  # Update the current king's square
         self.has_moved = True
@@ -376,45 +370,55 @@ class king(pieces):
             new_x, new_y = self.square % 8 + dx, self.square // 8 + dy
             if 0 <= new_x < 8 and 0 <= new_y < 8:
                 new_square = new_y * 8 + new_x
-                if Square.fields[new_square].get_piece() is None or Square.fields[new_square].get_piece().color != self.color:
+                piece = Board.fields[new_square].get_piece()
+                if piece is None or Board.fields[new_square].get_piece().color != self.color and not isinstance(piece, king):
                     moves.append(new_square)
 
         # Castling
-        if  not self.has_moved:
+        if  not self.has_moved :
             # Short castling (kingside)
             ll = self.square + 2
             if ll < 63:
-                if Square.fields[self.square + 1].get_piece() is None and Square.fields[self.square + 2].get_piece() is None:
-                    piece = Square.fields[self.square + 3].get_piece()
+                if Board.fields[self.square + 1].get_piece() is None and Board.fields[self.square + 2].get_piece() is None:
+                    piece = Board.fields[self.square + 3].get_piece()
                     if  piece is not None and isinstance(piece, rook) and not piece.has_moved:
                         moves.append(self.square + 2)
+                        self.sc_possible = True
 
         # Long castling (queenside)
-        if not self.has_moved:
-            if Square.fields[self.square - 1].get_piece() is None and Square.fields[self.square - 2].get_piece() is None and Square.fields[self.square - 3].get_piece() is None:
-                piece = Square.fields[self.square - 4].get_piece()
+        if not self.has_moved :
+            if Board.fields[self.square - 1].get_piece() is None and Board.fields[self.square - 2].get_piece() is None and Board.fields[self.square - 3].get_piece() is None:
+                piece = Board.fields[self.square - 4].get_piece()
                 if piece is not None and isinstance(piece, rook) and not piece.has_moved:
                     moves.append(self.square - 2)
+                    self.lc_possible = True
+        
+        if self.is_in_check(self.square):
+            if self.sc_possible:
+                moves.remove(self.square + 2)
+            if self.lc_possible:
+                moves.remove(self.square - 2)
         return moves
 
     def is_in_check(self, checksq = None):
-        for field in Square.fields:
+        checksq = self.square if checksq == None else checksq
+        for field in Board.fields:
             piece = field.get_piece()
-            if piece != None and piece.color != current_player:
-                for sq in piece.get_moves():
-                    checking_square = self.square if checksq == None else checksq == sq
-                    if checking_square == sq:
-                        return True
+            if isinstance(piece, king):
+                continue
+            if piece != None and piece.color != self.color:
+                if checksq in piece.get_moves():
+                    return True
                     
         return False
 
-# Draw Square
+# Draw Board
 for y in range(8):
     for x in range(8):
         if wh_bl % 2 == 0:
-            Square.fields.append(Square(x, y, False, 80, 80))  # Create black square
+            Board.fields.append(Board(x, y, False, 80, 80))  # Create black square
         else:
-            Square.fields.append(Square(x, y, True, 80, 80))  # Create white square
+            Board.fields.append(Board(x, y, True, 80, 80))  # Create white square
         wh_bl = 1 - wh_bl
     wh_bl = 1 - wh_bl
 
@@ -431,17 +435,17 @@ def set_board_from_string(string):
                     times += 1
                 for i in range(times):
                     if piece == "b":
-                        Square.fields[pos].set_piece(pawn(color,pos))
+                        Board.fields[pos].set_piece(pawn(color,pos))
                     if piece == "l":
-                        Square.fields[pos].set_piece(bishop(color,pos))
+                        Board.fields[pos].set_piece(bishop(color,pos))
                     if piece == "k":
-                        Square.fields[pos].set_piece(knight(color,pos))
+                        Board.fields[pos].set_piece(knight(color,pos))
                     if piece == "d":
-                        Square.fields[pos].set_piece(queen(color,pos))
+                        Board.fields[pos].set_piece(queen(color,pos))
                     if piece == "a":
-                            Square.fields[pos].set_piece(king(color,pos))
+                            Board.fields[pos].set_piece(king(color,pos))
                     if piece == "t":
-                        Square.fields [pos].set_piece(rook(color,pos))
+                        Board.fields [pos].set_piece(rook(color,pos))
                     if piece == None:
                         pass
                     pos += 1
@@ -474,16 +478,33 @@ def set_board_from_string(string):
             case "-":
                 pass
             case _:
-                print(string[i])
-                print("ungültige position")
-                pygame.quit()
-                sys.exit()
+                raise Exception(f"unknown position: {string[i]}")
 
-    for square in Square.fields:
+    for square in Board.fields:
         square.draw()
 
     pygame.display.flip()
 
+def check_legal(ban_sq_or_new_sq, color, mode = 0):
+    if mode == 0:
+        Board.fields[ban_sq_or_new_sq].set_piece(pawn(ban_sq_or_new_sq, color))
+        if check_in_check(color):
+            return False
+        else:
+            return True
+    else:
+        for f in Board.fields:
+            figure = f.get_piece()
+            if isinstance(figure, king):
+                if figure.color == color:
+                    return check_in_check(color, ban_sq_or_new_sq)
+
+def check_in_check(color, new_square = None):
+    for f in Board.fields:
+        figure = f.get_piece()
+        if isinstance(figure, king):
+            if figure.color == color:
+                return figure.is_in_check()
 def new_game():
     global destroyed
     set_board_from_string(start_pos)
@@ -492,14 +513,18 @@ def new_game():
     
 def load_game():
     global destroyed
-    if save_pos == "":
-        msg=messagebox.showinfo("Couldn't load", "the save.dat file is empty, the programm is shutting down.")
-        pygame.quit()
-        sys.exit()
-    else:
+    try:
+        f = open(pathdir + "/save.dat", "r")
+        save_pos = f.read()
+        f.close()
+
+        if save_pos == "":
+            raise Exception("empty save")
         set_board_from_string(save_pos)
         top.destroy()
-    destroyed = True
+        destroyed = True
+    except Exception as e:
+        messagebox.showinfo("Couldn't load", e)
 destroyed = False
 top = tkinter.Tk(className= "Chess")
 top.geometry("200x200")
@@ -522,7 +547,7 @@ def get_string_from_board():
     times = 0
     string = ""
     curr_piece = ""
-    for square in Square.fields:
+    for square in Board.fields:
         piece = square.get_piece()
         if piece is not None:
             piececolor = "w" if piece.color == "white" else "s"
@@ -606,24 +631,20 @@ def get_string_from_board():
     string += f"{'P' if current_player == 'black' else 'p'}"
     return string[2:]
 
-
+pygame.key.set_repeat(1000, 500 )
 storage = None
 oldsquare = 0
 square = 0
+hello_button = pygame_gui.elements.UIButton(pygame.Rect((0,640),(100,50)),"Save", manager, object_id= "#1")
 while running:
-    for field in Square.fields:
+    time_delta = clock.tick(60)/1000.0
+    for field in Board.fields:
         field.draw()
-        
-    pygame.key.set_repeat(1000, 500 )
+    pygame.draw.rect(wn, (64,66,64), pygame.Rect(0, 640, 640, 50))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN:
-            key = pygame.key.get_pressed()
-            if key[pygame.K_s]:
-                save(get_string_from_board())
-                msg=messagebox.showinfo("Chess","Game Saved")
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mousepos = pygame.mouse.get_pos()
             buttons = pygame.mouse.get_pressed(num_buttons=5)
@@ -637,37 +658,37 @@ while running:
             xy = (x, y)
 
             for square in range(64):
-                xypos = Square.fields[square].get_xy()
+                xypos = Board.fields[square].get_xy()
 
                 if xypos != xy:
                     continue
 
-                clicked_piece = Square.fields[square].get_piece()
+                clicked_piece = Board.fields[square].get_piece()
 
                 if storage is None and clicked_piece is not None and clicked_piece.color == current_player:
                     # select
                     storage = clicked_piece
-                    Square.fields[square].set_color(select_color)
+                    Board.fields[square].set_color(select_color)
                     oldsquare = square
                     
                     for square in clicked_piece.get_moves():
-                        Square.fields[square].set_color(possible_color)
+                        Board.fields[square].set_color(possible_color)
                 elif storage is not None:
                     if clicked_piece is None and square in storage.get_moves():
                         # move
                         storage.set_square(square)
-                        Square.fields[oldsquare].set_piece(None)
+                        Board.fields[oldsquare].set_piece(None)
                         storage = None
                         current_player = "black" if current_player == "white" else "white"
-                        for square in Square.fields:
+                        for square in Board.fields:
                             square.reset_color()
                     elif clicked_piece is not None and clicked_piece.color != current_player and square in storage.get_moves():
                         # attack
                         storage.set_square(square)
-                        Square.fields[oldsquare].set_piece(None)
+                        Board.fields[oldsquare].set_piece(None)
                         storage = None
                         current_player = "black" if current_player == "white" else "white"
-                        for square in Square.fields:
+                        for square in Board.fields:
                             square.reset_color()
                         #pygame.mixer.music.load(pathdir +'\\..\\'+ music[random.randint(0, 2)])
                         #pygame.mixer.music.play()
@@ -675,17 +696,26 @@ while running:
                         # select
                         storage = clicked_piece
                         oldsquare = square
-                        for sq in Square.fields:
+                        for sq in Board.fields:
                             sq.reset_color()
                         for sq in clicked_piece.get_moves():
-                            Square.fields[sq].set_color(possible_color)
-                        Square.fields[square].set_color(select_color)
+                            Board.fields[sq].set_color(possible_color)
+                        Board.fields[square].set_color(select_color)
                     else:
                         # illegal move, reset selection
                         storage = None
-                        for square in Square.fields:
+                        for square in Board.fields:
                             square.reset_color()
 
+        if event.type == pygame_gui.UI_BUTTON_PRESSED:
+            if event.ui_element == hello_button:
+                save(get_string_from_board())
+                msg=messagebox.showinfo("Chess","Game Saved")
+
+        manager.process_events(event)
+
+    manager.update(time_delta)
+    manager.draw_ui(wn)
     pygame.display.flip()
 
     caption = f'chess ({current_player}\'s turn)'
@@ -693,43 +723,17 @@ while running:
     white_king_found = False
     black_king_found = False
 
-    for f in Square.fields:
-        figure = f.get_piece()
-        if isinstance(figure, king):
-            if figure.color == "white":
+    for sq in Board.fields:
+        f = sq.get_piece()
+        if isinstance(f, king):
+            if f.color == "white":
                 white_king_found = True
-                if figure.is_in_check():
+                if f.is_in_check():
                     caption = "white is in check"
-            else:
+            if f.color == "black":
                 black_king_found = True
-                if figure.is_in_check():
+                if f.is_in_check():
                     caption = "black is in check"
-
-            
-    for i in range(64):
-        xy = Square.fields[i].get_xy()
-        if figure != None:
-            if xy[1] == 7 and figure.color == "black" and isinstance(figure, pawn):
-                #print(f"xy: {xy} figure.color: {figure.color} isinstance: {isinstance(figure, pawn)}")
-                checking = False
-                #caption = "waiting for input(1 = queen,2 = rook,p 3 = bishop, 4 = knight)"
-
-                while checking:
-                    keys = pygame.key.get_pressed()
-
-                    if keys[pygame.K_1]:
-                        square.set_piece(queen("black",Square.fields[i]))
-                        checking = False
-                    elif keys[pygame.K_2]:
-                        square.set_piece(rook("black",Square.fields[i]))
-                        checking = False
-                    elif keys[pygame.K_3]:
-                        square.set_piece(bishop("black",Square.fields[i]))
-                        checking = False
-                    elif keys[pygame.K_1]:
-                        square.set_piece(knight("black",Square.fields[i]))
-                        checking = False
-
     
     pygame.display.set_caption(caption)
 

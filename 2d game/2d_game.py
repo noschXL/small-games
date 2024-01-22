@@ -1,29 +1,32 @@
-import pygame,sys,os,random
+import pygame,sys,os,numpy
 
 pygame.init()
 
-pathdir = os.path.dirname(os.path.abspath(__file__))
-class SpriteSheet:
+SIZE = (20,20)
 
-    def __init__(self, filename):
-        """Load the sheet."""
-        self.spritepath = os.path.join(pathdir,'img',filename)
-        try:
-            self.sheet = pygame.image.load(self.spritepath).convert()
-        except pygame.error as e:
-            print(f"Unable to load spritesheet image: {filename}")
-            raise SystemExit(e)
+map = numpy.zeros(SIZE)
+multiplier = 40
 
+wn = pygame.display.set_mode((SIZE[0]* multiplier, SIZE[0]* multiplier))
+clock = pygame.time.Clock()
 
-    def image_at(self, rectangle, colorkey = None):
-        """Load a specific image from a specific rectangle."""
-        # Loads image from x, y, x+offset, y+offset.
-        rect = pygame.Rect(rectangle)
-        image = pygame.Surface(rect.size).convert()
-        image.blit(self.sheet, (0, 0), rect)
-        if colorkey is not None:
-            if colorkey == -1:
-                colorkey = image.get_at((0,0))
-            image.set_colorkey(colorkey, pygame.RLEACCEL)
-        return image
-    
+def load_img(file): 
+        img = pygame.image.load(os.path.join(dir, 'img', f'{file}.png'))
+        print(f"loaded img: {file}")
+        return img
+
+water_img = []
+
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+
+        wn.fill(("#000000"))
+        for x in range(SIZE[0]):
+            for y in range(SIZE[1]):
+                pygame.draw.rect(wn, "#B0E0E6", (x * multiplier, y * multiplier, multiplier, multiplier))
+
+        pygame.display.update()
+        clock.tick(60)
