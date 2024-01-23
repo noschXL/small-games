@@ -3,24 +3,26 @@ import pygame_gui
 import os
 import time
 import sys
-import tkinter
-from tkinter import messagebox
 # Load pygame
 pygame.init()
 pygame.mixer.init()
 
 pathdir = os.path.dirname(os.path.abspath(__file__))
 
-start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs8/e32/bw8/tw/kw/lw/dw/aw/lw/kw/tw/" # b = pawn, t = rook, k = knight, l = bishop, d = queen, a = king, e = empty, w = white, s = black
+start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs8/e32/bw8/tw/kw/lw/dw/aw/lw/kw/tw/p" # b = pawn, t = rook, k = knight, l = bishop, d = queen, a = king, e = empty, w = white, s = black, p = white player, P = black player
 
 open(pathdir + "/save.dat", "a").close()
+
 
 
 def save(pos):
     f = open(pathdir + "/save.dat", "+a")
     f.writelines(pos + "\n")
-    f.close
+    f.close()
 
+def quit():
+    pygame.quit()
+    sys.exit()
 
 select_color = pygame.Color(255, 247, 37)
 possible_color = pygame.Color(80, 150, 15)
@@ -36,12 +38,25 @@ WIDTH = 640
 HEIGHT = 690
 manager = pygame_gui.UIManager((WIDTH, HEIGHT), pathdir + "/img/theme.json")
 wn = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("chess (whites turn)")  # Set the initial caption
+pygame.display.set_caption("Chess")  # Set the initial caption
 running = True
 wh_bl = 0
 current_player = "white"  # Variable to track the current player's turn
 music = ["\snd\\1.mp3","\snd\\2.mp3","\snd\\3.mp3"]
-clock = pygame.time.Clock()                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+clock = pygame.time.Clock()
+
+reverseB = pygame_gui.elements.UIButton(pygame.Rect((0,640),(WIDTH / 2,50)),"undo last move", manager, object_id= "#1")
+quitB = pygame_gui.elements.UIButton(pygame.Rect((WIDTH / 2 - 50,HEIGHT - HEIGHT / 4 * 1 - 25),(100,50)),"Quit", manager, object_id= "#1")
+newB = pygame_gui.elements.UIButton(pygame.Rect((WIDTH / 2 - 100,HEIGHT - HEIGHT / 4 * 2 - 25),(200,50)),"New Game", manager, object_id= "#1")
+loadB = pygame_gui.elements.UIButton(pygame.Rect((WIDTH / 2 - 100,HEIGHT - HEIGHT / 4 * 3 - 25),(200,50)),"Load Game", manager, object_id= "#1")
+menuB = pygame_gui.elements.UIButton(pygame.Rect((WIDTH / 2,640),(WIDTH / 2,50)),"Exit to Main Menu", manager, object_id= "#1")
+
+reverseB.hide()
+quitB.hide()
+newB.hide()
+loadB.hide()
+menuB.hide()
+
 
 class SpriteSheet:
 
@@ -486,6 +501,22 @@ def set_board_from_string(string):
 
     pygame.display.flip()
 
+
+def reverse():
+    try:
+        f = open(pathdir + "/save.dat", "r")
+        lines = f .readlines()
+        f.close()
+        del lines[-1]
+        set_board_from_string(lines[-1][:-1])
+        f = open(pathdir + "/save.dat", "w")
+        f.writelines(lines)
+        f.close()
+    except:
+        open(pathdir + "/save.dat", 'w').close()
+        set_board_from_string(start_pos)
+
+
 def check_legal(ban_sq_or_new_sq, color, mode = 0):
     if mode == 0:
         Board.fields[ban_sq_or_new_sq].set_piece(pawn(ban_sq_or_new_sq, color))
@@ -510,42 +541,23 @@ def new_game():
     open(pathdir + "/save.dat", 'w').close()
     global destroyed
     set_board_from_string(start_pos)
-    top.destroy()
-    destroyed = True
+    #top.destroy()
+    #destroyed = True
     
 def load_game():
     global destroyed
     try:
         f = open(pathdir + "/save.dat", "r")
         save_pos = f.readline()
-        print(save_pos[:-1])
+        save_pos = save_pos[-1]
         f.close()
 
         if save_pos == "":
-            raise Exception("empty save")
+            return False
         set_board_from_string(save_pos[:-1])
-        top.destroy()
-        destroyed = True
+        return True
     except Exception as e:
-        messagebox.showinfo("Couldn't load", e)
-        
-destroyed = False
-top = tkinter.Tk(className= "Chess")
-top.geometry("200x200")
-B1 = tkinter.Button(top, text= "New Game", command= new_game)
-B1.place(x=50,y=50)
-B2 = tkinter.Button(top, text= "Load Game", command= load_game)
-B2.place(x = 50, y = 125)
-label1 = tkinter.Label(top, text = "press 'S' in an Game")
-label1.place(x=25,y = 150)
-label2 = tkinter.Label(top, text = "to save")
-label2.place(x=65,y = 175)
-top.mainloop()
-
-if top.state != 'normal' and not destroyed:
-        pygame.quit()
-        sys.exit()
-
+        return False
 def get_string_from_board():
     color = ""
     times = 0
@@ -635,123 +647,171 @@ def get_string_from_board():
     string += f"{'P' if current_player == 'black' else 'p'}"
     return string[2:]
 
-pygame.key.set_repeat(1000, 500 )
-storage = None
-oldsquare = 0
-square = 0
-hello_button = pygame_gui.elements.UIButton(pygame.Rect((0,640),(100,50)),"Save", manager, object_id= "#1")
-while running:
-    time_delta = clock.tick(60)/1000.0
-    for field in Board.fields:
-        field.draw()
-    pygame.draw.rect(wn, (64,66,64), pygame.Rect(0, 640, 640, 50))
+def titleScreen():
+    quitB.show()
+    newB.show()
+    loadB.show()
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            mousepos = pygame.mouse.get_pos()
-            buttons = pygame.mouse.get_pressed(num_buttons=5)
+    reverseB.hide()
+    menuB.hide()
 
-            # Left click
-            if not buttons[0]:
-                continue
+    while True:
+        wn.fill((65,65,67))
+        time_delta = clock.tick(60)/1000.0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit()
+            elif event.type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.ui_element == quitB:
+                    quit()
+                elif event.ui_element == newB:
+                    new_game()
+                    multi()
+                elif event.ui_element == loadB:
+                    if load_game():
+                        multi()
 
-            x = mousepos[0] // 80  # Calculate the column of the clicked square
-            y = mousepos[1] // 80  # Calculate the row of the clicked square
-            xy = (x, y)
+            manager.process_events(event)
 
-            for square in range(64):
-                xypos = Board.fields[square].get_xy()
+        manager.update(time_delta)
+        manager.draw_ui(wn)
+        pygame.display.flip()
 
-                if xypos != xy:
+            
+
+def multi():
+    global current_player
+
+    quitB.hide()
+    newB.hide() 
+    loadB.hide()
+
+    reverseB.show()
+    menuB.show()
+
+    pygame.key.set_repeat(1000, 500)
+    running = True
+    storage = None
+    oldsquare = 0
+    square = 0
+    while running:
+        time_delta = clock.tick(60)/1000.0
+        for field in Board.fields:
+            field.draw()
+        pygame.draw.rect(wn, (64,66,64), pygame.Rect(0, 640, 640, 50))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit()
+            elif event.type == pygame.KEYDOWN:
+                key = pygame.key.get_pressed()
+                if key[pygame.K_LCTRL] and key[pygame.K_z]:
+                    reverse()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mousepos = pygame.mouse.get_pos()
+                buttons = pygame.mouse.get_pressed(num_buttons=5)
+
+                # Left click
+                if not buttons[0]:
                     continue
 
-                clicked_piece = Board.fields[square].get_piece()
+                x = mousepos[0] // 80  # Calculate the column of the clicked square
+                y = mousepos[1] // 80  # Calculate the row of the clicked square
+                xy = (x, y)
 
-                if storage is None and clicked_piece is not None and clicked_piece.color == current_player:
-                    # select
-                    storage = clicked_piece
-                    Board.fields[square].set_color(select_color)
-                    oldsquare = square
-                    
-                    for square in clicked_piece.get_moves():
-                        Board.fields[square].set_color(possible_color)
-                elif storage is not None:
-                    if clicked_piece is None and square in storage.get_moves():
-                        # move
-                        storage.set_square(square)
-                        Board.fields[oldsquare].set_piece(None)
-                        storage = None
-                        current_player = "black" if current_player == "white" else "white"
-                        for square in Board.fields:
-                            square.reset_color()
-                    elif clicked_piece is not None and clicked_piece.color != current_player and square in storage.get_moves():
-                        # attack
-                        storage.set_square(square)
-                        Board.fields[oldsquare].set_piece(None)
-                        storage = None
-                        current_player = "black" if current_player == "white" else "white"
-                        for square in Board.fields:
-                            square.reset_color()
-                        #pygame.mixer.music.load(pathdir +'\\..\\'+ music[random.randint(0, 2)])
-                        #pygame.mixer.music.play()
-                    elif clicked_piece is not None and clicked_piece.color == current_player:
+                for square in range(64):
+                    xypos = Board.fields[square].get_xy()
+
+                    if xypos != xy:
+                        continue
+
+                    clicked_piece = Board.fields[square].get_piece()
+
+                    if storage is None and clicked_piece is not None and clicked_piece.color == current_player:
                         # select
                         storage = clicked_piece
-                        oldsquare = square
-                        for sq in Board.fields:
-                            sq.reset_color()
-                        for sq in clicked_piece.get_moves():
-                            Board.fields[sq].set_color(possible_color)
                         Board.fields[square].set_color(select_color)
-                    else:
-                        # illegal move, reset selection
-                        storage = None
-                        for square in Board.fields:
-                            square.reset_color()
+                        oldsquare = square
+                        
+                        for square in clicked_piece.get_moves():
+                            Board.fields[square].set_color(possible_color)
+                    elif storage is not None:
+                        if clicked_piece is None and square in storage.get_moves():
+                            # move
+                            storage.set_square(square)
+                            Board.fields[oldsquare].set_piece(None)
+                            storage = None
+                            current_player = "black" if current_player == "white" else "white"
+                            for square in Board.fields:
+                                square.reset_color()
+                            save(get_string_from_board())
+                        elif clicked_piece is not None and clicked_piece.color != current_player and square in storage.get_moves():
+                            # attack
+                            storage.set_square(square)
+                            Board.fields[oldsquare].set_piece(None)
+                            storage = None
+                            current_player = "black" if current_player == "white" else "white"
+                            for square in Board.fields:
+                                square.reset_color()
+                            #pygame.mixer.music.load(pathdir +'\\..\\'+ music[random.randint(0, 2)])
+                            #pygame.mixer.music.play()
+                            save(get_string_from_board())
+                        elif clicked_piece is not None and clicked_piece.color == current_player:
+                            # select
+                            storage = clicked_piece
+                            oldsquare = square
+                            for sq in Board.fields:
+                                sq.reset_color()
+                            for sq in clicked_piece.get_moves():
+                                Board.fields[sq].set_color(possible_color)
+                            Board.fields[square].set_color(select_color)
+                        else:
+                            # illegal move, reset selection
+                            storage = None
+                            for square in Board.fields:
+                                square.reset_color()
 
-        if event.type == pygame_gui.UI_BUTTON_PRESSED:
-            if event.ui_element == hello_button:
-                save(get_string_from_board())
-                msg=messagebox.showinfo("Chess","Game Saved")
+            if event.type == pygame_gui.UI_BUTTON_PRESSED:
+                if event.ui_element == reverseB:
+                    reverse()
+                elif event.ui_element == menuB:
+                    running = False
 
-        manager.process_events(event)
+            manager.process_events(event)
 
-    manager.update(time_delta)
-    manager.draw_ui(wn)
-    pygame.display.flip()
+        manager.update(time_delta)
+        manager.draw_ui(wn)
+        pygame.display.flip()
 
-    caption = f'chess ({current_player}\'s turn)'
+        caption = f'chess ({current_player}\'s turn)'
 
-    white_king_found = False
-    black_king_found = False
+        white_king_found = False
+        black_king_found = False
 
-    for sq in Board.fields:
-        f = sq.get_piece()
-        if isinstance(f, king):
-            if f.color == "white":
-                white_king_found = True
-                if f.is_in_check():
-                    caption = "white is in check"
-            if f.color == "black":
-                black_king_found = True
-                if f.is_in_check():
-                    caption = "black is in check"
-    
-    pygame.display.set_caption(caption)
+        for sq in Board.fields:
+            f = sq.get_piece()
+            if isinstance(f, king):
+                if f.color == "white":
+                    white_king_found = True
+                    if f.is_in_check():
+                        caption = "white is in check"
+                if f.color == "black":
+                    black_king_found = True
+                    if f.is_in_check():
+                        caption = "black is in check"
 
-    if not black_king_found:
-        pygame.display.set_caption("white won! congrats to white! (game made by noschXL)")
-        time.sleep(5)
-        running = False
+        pygame.display.set_caption(caption)
 
- 
-    if not white_king_found:
-        pygame.display.set_caption("black won! congrats to black! (game made by noschXL)")  
-        time.sleep(5)
-        running = False
+        if not black_king_found:
+            pygame.display.set_caption("white won! congrats to white! (game made by noschXL)")
+            time.sleep(5)
+            running = False
 
 
-pygame.quit()
-sys.exit()
+        if not white_king_found:
+            pygame.display.set_caption("black won! congrats to black! (game made by noschXL)")  
+            time.sleep(5)
+            running = False
+    titleScreen()
+
+titleScreen()
