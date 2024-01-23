@@ -17,9 +17,8 @@ open(pathdir + "/save.dat", "a").close()
 
 
 def save(pos):
-    open(pathdir + "/save.dat", 'w').close()
     f = open(pathdir + "/save.dat", "+a")
-    f.write(pos)
+    f.writelines(pos + "\n")
     f.close
 
 
@@ -424,6 +423,8 @@ for y in range(8):
 
 def set_board_from_string(string):
     global current_player
+    for sq in Board.fields:
+        sq.set_piece(None)
     pos = 0
     color = None
     piece = None
@@ -506,6 +507,7 @@ def check_in_check(color, new_square = None):
             if figure.color == color:
                 return figure.is_in_check()
 def new_game():
+    open(pathdir + "/save.dat", 'w').close()
     global destroyed
     set_board_from_string(start_pos)
     top.destroy()
@@ -515,16 +517,18 @@ def load_game():
     global destroyed
     try:
         f = open(pathdir + "/save.dat", "r")
-        save_pos = f.read()
+        save_pos = f.readline()
+        print(save_pos[:-1])
         f.close()
 
         if save_pos == "":
             raise Exception("empty save")
-        set_board_from_string(save_pos)
+        set_board_from_string(save_pos[:-1])
         top.destroy()
         destroyed = True
     except Exception as e:
         messagebox.showinfo("Couldn't load", e)
+        
 destroyed = False
 top = tkinter.Tk(className= "Chess")
 top.geometry("200x200")
