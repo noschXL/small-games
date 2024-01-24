@@ -539,18 +539,14 @@ def check_in_check(color, new_square = None):
                 return figure.is_in_check()
 def new_game():
     open(pathdir + "/save.dat", 'w').close()
-    global destroyed
     set_board_from_string(start_pos)
-    #top.destroy()
-    #destroyed = True
     
 def load_game():
-    global destroyed
     try:
         f = open(pathdir + "/save.dat", "r")
-        save_pos = f.readline()
+        save_pos = f.readlines()
         save_pos = save_pos[-1]
-        f.close()
+        f.close() 
 
         if save_pos == "":
             return False
