@@ -12,8 +12,13 @@ pathdir = os.path.dirname(os.path.abspath(__file__))
 start_pos = "ts/ks/ls/ds/as/ls/ks/ts/bs8/e32/bw8/tw/kw/lw/dw/aw/lw/kw/tw/p" # b = pawn, t = rook, k = knight, l = bishop, d = queen, a = king, e = empty, w = white, s = black, p = white player, P = black player
 
 open(pathdir + "/save.dat", "a").close()
-
-
+# plans / Pläne
+# play against AI / gegen einen Computer spielen
+# online multiplayer / online mehrspieler
+# different graphics / verschiedene Grafiken
+# show captured pieces / geschlagene Figuren zeigen
+# freeplay / freie Züge
+# 
 
 def save(pos):
     f = open(pathdir + "/save.dat", "+a")
@@ -171,14 +176,14 @@ class pawn(pieces):
 
         # Check diagonally left
         if self.square % 8 != 0:
-            left_diagonal = self.square + direction * 7
-            if Board.fields[left_diagonal].get_piece() is not None:
+            left_diagonal = self.square + direction * 9
+            if Board.fields[left_diagonal].get_piece() is not None and Board.fields[left_diagonal].get_piece().color != self.color:
                 moves.append(left_diagonal)
 
         # Check diagonally right
         if self.square % 8 != 7:
-            right_diagonal = self.square + direction * 9
-            if Board.fields[right_diagonal].get_piece() is not None:
+            right_diagonal = self.square + direction * 7
+            if Board.fields[right_diagonal].get_piece() is not None and Board.fields[right_diagonal].get_piece().color != self.color:
                 moves.append(right_diagonal)
 
         return moves
