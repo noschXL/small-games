@@ -18,11 +18,11 @@ open(pathdir + "/save.dat", "a").close()
 # different graphics / verschiedene Grafiken
 # show captured pieces / geschlagene Figuren zeigen
 # freeplay / freie Züge
-# 
+# limited time / begrenzte Zeit
 
-def save(pos):
-    f = open(pathdir + "/save.dat", "+a")
-    f.writelines(pos + "\n")
+def save(data, file = "saves/save.dat"):
+    f = open(pathdir + "/"+ file, "+a")
+    f.writelines(data + "\n")
     f.close()
 
 def quit():
@@ -509,18 +509,17 @@ def set_board_from_string(string):
 
 def reverse():
     try:
-        f = open(pathdir + "/save.dat", "r")
+        f = open(pathdir + "/saves/save.dat", "r")
         lines = f .readlines()
         f.close()
         del lines[-1]
         set_board_from_string(lines[-1][:-1])
-        f = open(pathdir + "/save.dat", "w")
+        f = open(pathdir + "/saves/save.dat", "w")
         f.writelines(lines)
         f.close()
     except:
-        open(pathdir + "/save.dat", 'w').close()
+        open(pathdir + "/saves/save.dat", 'w').close()
         set_board_from_string(start_pos)
-
 
 def check_legal(ban_sq_or_new_sq, color, mode = 0):
     if mode == 0:
@@ -548,7 +547,7 @@ def new_game():
     
 def load_game():
     try:
-        f = open(pathdir + "/save.dat", "r")
+        f = open(pathdir + "/saves/save.dat", "r")
         save_pos = f.readlines()
         save_pos = save_pos[-1]
         f.close() 
