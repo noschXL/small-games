@@ -21,7 +21,7 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-            exit()
+            sys.exit()
 
         wn.fill(("#000000"))
         for x in range(SIZE[0]):

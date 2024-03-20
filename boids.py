@@ -1,3 +1,5 @@
+#an boids simulation
+
 import pygame
 import sys
 import random

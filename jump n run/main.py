@@ -168,12 +168,10 @@ class Player:
             if self.allow_jump and self.vel.y == 0:
                 self.jumping = 1
                 self.allow_jump = False
-        if keys[pygame.K_LSHIFT] and self.allow_dash and abs(self.vel.x) <= 6:
+        if (keys[pygame.K_RSHIFT] or keys[pygame.K_LSHIFT]) and self.allow_dash and abs(self.vel.x) <= 6:
             self.dashing = True
             self.allow_dash = False
-        if keys[pygame.K_w]:
-            self.entering = True
-        if keys[pygame.K_e]:
+        if keys[pygame.K_e] or keys[pygame.K_w]:
             self.using = True
 
         #velocity + input
@@ -220,12 +218,18 @@ class Player:
                 dx = 0
                 self.vel.x = 0
 
-        if self.using:
-            for tile in level.interact_list:
-                if tile[1].colliderect(self.rect):
-                    id = tile[2]["id"]
-                    if id == 0:
-                        new = True
+    
+        for tile in level.interact_list:
+            if tile[1].colliderect(self.rect):
+                id = tile[2]["id"]
+                if id == 0 and self.using:
+                    new = 1
+                elif id ==5 and self.using:
+                    new = 1
+                elif id ==8:
+                    self.spawn()
+                else:
+                    pass
 
         # update position
         self.rect.x += dx
@@ -255,9 +259,12 @@ def main():
 
         #drawing and updateing
         level.draw()
-        new_level = player.update(dt, level)
-        if new_level:
-            current_level += 1
+        adding = player.update(dt, level)
+        if adding:
+            if current_level + adding >= 5:
+                current_level = 3
+            else:
+                current_level += adding
             level = Level(level_file_dict[levellist[current_level]], player)
 
         
@@ -278,10 +285,11 @@ level_file_dict = {
     "tutorial": "lvl_1.tmx",
     "level_2": "lvl_2.tmx",
     "level_3": "lvl_3.tmx",
-    "level_4": "school_floor.tmx"
+    "level_4": "school_floor.tmx",
+    "level_5": "classroom_1.tmx"
 }
 
-levellist = ["tutorial", "level_2", "level_3", "level_4"]
+levellist = ["tutorial", "level_2", "level_3", "level_4", "level_5"]
 
 for y in range(4):
     player_walk_imgs += player_walk.load_strip((0,32 * y, 32, 32), 4)
@@ -289,8 +297,6 @@ for y in range(4):
 player_idle_img = []
 for y in range(2):
     player_idle_img += player_idle.load_strip((0,32 * y, 32, 32), 6)
-
-print(player_idle_img)
 
 #player- and levelloading
 

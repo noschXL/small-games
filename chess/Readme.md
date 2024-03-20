@@ -1,3 +1,3 @@
-this game was made and published by noschXL.
+this game was made by noschXL.
 
-the chesspiece-sprites were made by Brysia check her itch-acc out too.
+the chesspiece-sprites were made by Brysia check her itch-acc out.

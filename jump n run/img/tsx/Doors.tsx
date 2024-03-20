@@ -6,7 +6,17 @@
    <property name="id" type="int" value="4"/>
   </properties>
  </tile>
+ <tile id="1">
+  <properties>
+   <property name="id" type="int" value="4"/>
+  </properties>
+ </tile>
  <tile id="2">
+  <properties>
+   <property name="id" type="int" value="5"/>
+  </properties>
+ </tile>
+ <tile id="3">
   <properties>
    <property name="id" type="int" value="5"/>
   </properties>
@@ -14,6 +24,16 @@
  <tile id="4">
   <properties>
    <property name="id" type="int" value="6"/>
+  </properties>
+ </tile>
+ <tile id="5">
+  <properties>
+   <property name="id" type="int" value="6"/>
+  </properties>
+ </tile>
+ <tile id="6">
+  <properties>
+   <property name="id" type="int" value="8"/>
   </properties>
  </tile>
 </tileset>

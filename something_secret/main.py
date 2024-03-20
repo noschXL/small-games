@@ -1,3 +1,6 @@
+#just an game with only the mouse, to train mouseinput -> action coding
+# there is an .exe in dist
+
 import pygame, sys, os, time, random, math
 
 pygame.init()
