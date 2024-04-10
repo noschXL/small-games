@@ -82,7 +82,7 @@ EXITB = 1
 QUEENB = 0
 ROOKB = 1
 KNIGHTB = 2
-BISHOPB = 3
+BISHOPB = 3 
 SELECTL = 4
 
 menuBl = []

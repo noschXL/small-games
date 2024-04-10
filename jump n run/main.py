@@ -38,7 +38,6 @@ class SpriteSheet:
                 for x in range(image_count)]
         return self.images_at(tups, colorkey)
 
-
 #Level class
 class Level:
     def __init__(self, tilemap, player, visible = True ): 
@@ -47,13 +46,17 @@ class Level:
         self.deco_list = []
         self.interact_list = []
         self.floor2_list = []
+        self.enemy_list = []
+        self.enemys = []
+        self.texts = []
         self.visible = visible
-        self.tmx_data = pytmx.load_pygame(os.path.join(path, '..', 'img', tilemap))
+        self.tmx_data = pytmx.load_pygame(os.path.join(path, 'img', tilemap))
         self.floor = self.tmx_data.get_layer_by_name("Floor")
         self.floor2 = self.tmx_data.get_layer_by_name("Floor2")
         self.deco = self.tmx_data.get_layer_by_name("Deco")
         self.deco2 = self.tmx_data.get_layer_by_name("Deco2")
         self.interact = self.tmx_data.get_layer_by_name("Interactable")
+        self.enemy = self.tmx_data.get_layer_by_name("Enemy")
         self.keys = []
 
         #defining all tile rects and surfaces(imgs)
@@ -68,9 +71,11 @@ class Level:
             self.deco_list.append([surf, pygame.Rect(x * 32,y * 32, surf.get_width(), surf.get_height())])
 
         for x,y,surf in self.interact.tiles():
-            self.interact_list.append([surf, pygame.Rect(x * 32,y * 32, surf.get_width(), surf.get_height()), self.tmx_data.get_tile_properties(x,y,2)])
+            self.interact_list.append([surf, pygame.Rect(x * 32,y * 32, surf.get_width(), surf.get_height()), self.tmx_data.get_tile_properties(x,y,3)])
         for x,y,surf in self.floor2.tiles():
             self.floor2_list.append([surf, pygame.Rect(x * 32,y * 32, surf.get_width(), surf.get_height())])
+        for x,y,surf in self.enemy.tiles():
+            self.enemy_list.append([surf, pygame.Rect(x * 32,y * 32, surf.get_width(), surf.get_height()), self.tmx_data.get_tile_properties(x,y,0)])
 
         #reading special values
         for pos in self.interact_list:
@@ -78,10 +83,22 @@ class Level:
             if id == 1:
                 player.spawn(pos[1].topleft)
 
+        for enemy in self.enemy_list:
+            if enemy[2]["id"] == 2:
+                self.texts.append(Text(enemy[2]["text"], enemy[1].topleft, 0.5))
+            else:
+                self.enemys.append(Enemy(enemy[1].topleft))
+        
     def draw(self):
         #draw every tile
         for tile in self.tile_list + self.deco_list + self.interact_list + self.floor2_list:
             screen.blit(tile[0], tile[1])
+        #draw enemys
+        for enemy in self.enemys:
+            enemy.draw()
+        #draw text
+        for text in self.texts:
+            text.draw()
 
 #player class
 class Player:
@@ -230,6 +247,13 @@ class Player:
                     self.spawn()
                 else:
                     pass
+                
+        for enemy in level.enemys:
+            if enemy.rect.colliderect(self.rect.x + dx, self.rect.y, self.rect.width, self.rect.height) and not enemy.defeated:
+                dx = 0
+                self.vel.x = 0
+                if self.using:
+                    enemy.defeated = True
 
         # update position
         self.rect.x += dx
@@ -240,6 +264,28 @@ class Player:
         self.draw((self.direction_x, self.direction_y))
         return new
 
+#enemy class
+class Enemy:
+    def __init__(self, pos: tuple):
+        self.defeated = False
+        self.rect = pygame.Rect(pos,(32,32))
+        self.frame = 0
+        
+    def draw(self):
+        pygame.draw.rect(screen, "#FF0000", self.rect)
+        
+#text class
+class Text:
+    
+    def __init__(self, text: str, pos: tuple, scale):
+        self.surface = font.render(text, False, "#000000")
+        self.surface = pygame.transform.scale_by(self.surface, scale)
+        self.rect = self.surface.get_rect()
+        self.rect.center = pos
+        
+    def draw(self):
+        screen.blit(self.surface, self.rect)
+        
 def main():
     current_level = 0
     player = Player((width / 2, height / 2))
@@ -272,14 +318,16 @@ def main():
         pygame.display.flip()
 
 #initial setup
+pygame.init()
 width, height = 1280, 800
-path = os.path.abspath(__file__)
+path = os.path.dirname(os.path.abspath(__file__))
 screen = pygame.display.set_mode((width, height))
+font = pygame.Font(os.path.join(path, 'img', 'prstartk.ttf'))
 clock = pygame.time.Clock()
 
 # defining spritesheets and imgs
-player_walk = SpriteSheet(os.path.join(path, '..', 'img', 'character_walk.png'))
-player_idle = SpriteSheet(os.path.join(path, '..', 'img', 'character_idle.png'))
+player_walk = SpriteSheet(os.path.join(path, 'img', 'character_walk.png'))
+player_idle = SpriteSheet(os.path.join(path, 'img', 'character_idle.png'))
 player_walk_imgs = []
 level_file_dict = {
     "tutorial": "lvl_1.tmx",
