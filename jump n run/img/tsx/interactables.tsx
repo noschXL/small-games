@@ -13,6 +13,7 @@
  </tile>
  <tile id="2">
   <properties>
+   <property name="id" type="int" value="2"/>
    <property name="text" value="press shift to dash in the air or on the ground."/>
   </properties>
  </tile>

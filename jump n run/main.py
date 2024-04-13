@@ -4,6 +4,25 @@ import pytmx
 import os
 from sys import exit
 
+#function for separating text
+def sep_text(text: str, breakpoint = 15):
+    spaces = []
+    texts = []
+    posi = 1
+    old_space = 0
+    for i,char in enumerate(text):
+        if char.isspace():
+            spaces.append(i)
+    
+    for space in spaces:
+        if space // breakpoint >= posi:
+            posi += 1
+            texts.append(text[old_space:space])
+            old_space = space
+            
+    texts.append(text[old_space:])
+    return texts
+
 #class for loading Spritesheets
 class SpriteSheet:
 
@@ -243,6 +262,8 @@ class Player:
                     new = 1
                 elif id ==5 and self.using:
                     new = 1
+                elif id == 4 and self.using:
+                    new = 2
                 elif id ==8:
                     self.spawn()
                 else:
@@ -278,13 +299,25 @@ class Enemy:
 class Text:
     
     def __init__(self, text: str, pos: tuple, scale):
-        self.surface = font.render(text, False, "#000000")
-        self.surface = pygame.transform.scale_by(self.surface, scale)
-        self.rect = self.surface.get_rect()
-        self.rect.center = pos
+        
+        last_height = 0
+        self.rects = []
+        self.surfaces = []
+        texts = sep_text(text)
+        
+        for i,string in enumerate(texts):
+            surface = font.render(string, False, "#000000")
+            surface = pygame.transform.scale_by(surface, scale)
+            rect = surface.get_rect()
+            rect.centerx = pos[0]
+            rect.centery = pos[1] + last_height
+            last_height = rect.height * (i + 1)
+            self.surfaces.append(surface)
+            self.rects.append(rect)
         
     def draw(self):
-        screen.blit(self.surface, self.rect)
+        for i in range(len(self.rects)):
+            screen.blit(self.surfaces[i], self.rects[i])
         
 def main():
     current_level = 0
@@ -303,11 +336,11 @@ def main():
         #blank screen
         screen.fill("#00FFFF")
 
-        #drawing and updateing
+        #drawing and updating
         level.draw()
         adding = player.update(dt, level)
         if adding:
-            if current_level + adding >= 5:
+            if current_level + adding >= 6:
                 current_level = 3
             else:
                 current_level += adding
@@ -334,10 +367,11 @@ level_file_dict = {
     "level_2": "lvl_2.tmx",
     "level_3": "lvl_3.tmx",
     "level_4": "school_floor.tmx",
-    "level_5": "classroom_1.tmx"
+    "level_5": "classroom_1.tmx",
+    "level_6": "classroom_2.tmx"
 }
 
-levellist = ["tutorial", "level_2", "level_3", "level_4", "level_5"]
+levellist = ["tutorial", "level_2", "level_3", "level_4", "level_5", "level_6"]
 
 for y in range(4):
     player_walk_imgs += player_walk.load_strip((0,32 * y, 32, 32), 4)
@@ -345,8 +379,6 @@ for y in range(4):
 player_idle_img = []
 for y in range(2):
     player_idle_img += player_idle.load_strip((0,32 * y, 32, 32), 6)
-
-#player- and levelloading
 
 #running the game
 if __name__ == "__main__":
