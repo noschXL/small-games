@@ -3,7 +3,7 @@ import pygame
 import pytmx
 import os
 import sys
-
+#set to True when compiling using pyinstaller --noconsole --onefile 'main.py' else set it to False to run the programm
 COMPILING = True
 
 def resource_path(relative_path):
@@ -79,7 +79,7 @@ class Level:
         self.enemys = []
         self.texts = []
         self.visible = visible
-        self.tmx_data = pytmx.load_pygame(os.path.join(path, 'img', tilemap))
+        self.tmx_data = pytmx.load_pygame(tilemap)
         self.floor = self.tmx_data.get_layer_by_name("Floor")
         self.floor2 = self.tmx_data.get_layer_by_name("Floor2")
         self.deco = self.tmx_data.get_layer_by_name("Deco")
@@ -357,7 +357,10 @@ def main():
                 current_level = 3
             else:
                 current_level += adding
-            level = Level(level_file_dict[levellist[current_level]], player)
+            if COMPILING:
+                level = Level(resource_path("img/" + level_file_dict[levellist[current_level]]), player)
+            else:
+                level = Level(level_file_dict[levellist[current_level]], player)
 
         
         #screen refresh
