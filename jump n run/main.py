@@ -2,7 +2,17 @@
 import pygame
 import pytmx
 import os
-from sys import exit
+import sys
+
+COMPILING = True
+
+def resource_path(relative_path):
+    try:
+        base_path = sys.executable + "\\..\\"
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 #function for separating text
 def sep_text(text: str, breakpoint = 15):
@@ -322,7 +332,10 @@ class Text:
 def main():
     current_level = 0
     player = Player((width / 2, height / 2))
-    level = Level(level_file_dict[levellist[current_level]], player)
+    if COMPILING:
+        level = Level(resource_path("img/" + level_file_dict[levellist[current_level]]), player)
+    else:
+        level = Level(level_file_dict[levellist[current_level]], player)
 
     #Game loop
     while True:
@@ -332,7 +345,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
+                sys.exit()
         #blank screen
         screen.fill("#00FFFF")
 
@@ -353,14 +366,26 @@ def main():
 #initial setup
 pygame.init()
 width, height = 1280, 800
-path = os.path.dirname(os.path.abspath(__file__))
 screen = pygame.display.set_mode((width, height))
-font = pygame.Font(os.path.join(path, 'img', 'prstartk.ttf'))
+
+if COMPILING:
+    try:
+        path = sys._MEIPASS
+    except Exception:
+        path = os.path.abspath(".")
+    player_walk = SpriteSheet(resource_path("img/character_walk.png"))
+    player_idle = SpriteSheet(resource_path("img/character_idle.png"))
+    font = pygame.Font(resource_path("img/prstartk.ttf"))
+else:
+    path = os.path.abspath(os.path.dirname(__file__))
+    player_walk = SpriteSheet(os.path.join(path + "/img/character_walk.png"))
+    player_idle = SpriteSheet(os.path.join(path + "/img/character_idle.png"))
+    font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
+
 clock = pygame.time.Clock()
 
-# defining spritesheets and imgs
-player_walk = SpriteSheet(os.path.join(path, 'img', 'character_walk.png'))
-player_idle = SpriteSheet(os.path.join(path, 'img', 'character_idle.png'))
+# defining spritesheets and imgs 
+
 player_walk_imgs = []
 level_file_dict = {
     "tutorial": "lvl_1.tmx",

@@ -1,3 +1,7 @@
 chess/saves/save.dat
 .vscode/
 __pycache__/
+build/
+dist/
+o-console.spec
+main.spec
