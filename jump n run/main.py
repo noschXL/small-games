@@ -382,6 +382,7 @@ def interact_entity(entity: Enemy, player: Player, level: Level):
     stop = False
     player.direction_x = 0
     while True:
+        mousepos = pygame.mouse.get_pos()
         dt = clock.tick(60) / 1000
         #event_check
         for event in pygame.event.get():
@@ -407,7 +408,7 @@ def interact_entity(entity: Enemy, player: Player, level: Level):
 pygame.init()
 width, height = 1280, 800
 screen = pygame.display.set_mode((width, height))
-
+# defining spritesheets, imgs, fonts and current path
 if COMPILING:
     try:
         path = sys._MEIPASS
@@ -426,9 +427,14 @@ else:
     textboxcords = width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height()
     font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
 
+textbox = pygame.transform.scale_by(textbox, 16)
+textboxcords = width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height()
+good_text = font.render(sep_text("make him like you, use this actoin twice"), True, "#000000")
+good_text_select = font.render(sep_text("make him like you"), True, "#00FF00")
+bad_text = font.render(sep_text("make him not like you"), True, "#000000")
+bad_text_select = font.render(sep_text("make him not like you"), True, "#FF0000")
 clock = pygame.time.Clock()
-
-# defining spritesheets and imgs 
+good_text_coords = 10
 
 player_walk_imgs = []
 level_file_dict = {
