@@ -3,8 +3,8 @@ import pygame
 import pytmx
 import os
 import sys
-#set to True when compiling using pyinstaller --noconsole --onefile 'main.py' else set it to False to run the programm
-COMPILING = True
+#set to True when compiling using pyinstaller --noconsole --onefile 'main.py' else set it to False to run the programm 
+COMPILING = False
 
 def resource_path(relative_path):
     try:
@@ -79,7 +79,10 @@ class Level:
         self.enemys = []
         self.texts = []
         self.visible = visible
-        self.tmx_data = pytmx.load_pygame(tilemap)
+        if COMPILING:
+            self.tmx_data = pytmx.load_pygame(tilemap)
+        else:
+            self.tmx_data = pytmx.load_pygame(os.path.join(path, "img", tilemap))
         self.floor = self.tmx_data.get_layer_by_name("Floor")
         self.floor2 = self.tmx_data.get_layer_by_name("Floor2")
         self.deco = self.tmx_data.get_layer_by_name("Deco")
@@ -153,7 +156,12 @@ class Player:
             self.frect = pygame.Rect((self.spawn_pos), (32,32))
 
 
-    def draw(self, directions):
+    def draw(self, directions, dt):
+        #animation frames
+        self.idle_frame += 1 * dt / 0.0166
+        self.idle_frame = self.idle_frame % 30
+        self.walk_frame += 1 * dt / 0.0166
+        self.walk_frame = self.walk_frame % 24
         #drawing animation with index
         if directions[0] == 0:
             if self.old_direction == 1:
@@ -183,11 +191,6 @@ class Player:
         
 
     def update(self, dt, level: Level):
-        #animation frames
-        self.idle_frame += 1 * dt / 0.0166
-        self.idle_frame = self.idle_frame % 30
-        self.walk_frame += 1 * dt / 0.0166
-        self.walk_frame = self.walk_frame % 24
         new = False
 
         #movement
@@ -284,7 +287,12 @@ class Player:
                 dx = 0
                 self.vel.x = 0
                 if self.using:
-                    enemy.defeated = True
+                    enemy.interact(self, level)
+            if enemy.rect.colliderect(self.rect.x, self.rect.y + dy, self.rect.width, self.rect.height) and not enemy.defeated:
+                dy = 0
+                self.vel.y = 0
+                self.allow_jump = True
+                self.allow_dash = True
 
         # update position
         self.rect.x += dx
@@ -292,18 +300,22 @@ class Player:
         if self.rect.y >= height:
             self.spawn()
 
-        self.draw((self.direction_x, self.direction_y))
+        self.draw((self.direction_x, self.direction_y), dt)
         return new
 
 #enemy class
 class Enemy:
     def __init__(self, pos: tuple):
         self.defeated = False
-        self.rect = pygame.Rect(pos,(32,32))
+        self.rect = pygame.rect.Rect(pos,(32,32))
         self.frame = 0
+        self.likeing = 0
         
     def draw(self):
         pygame.draw.rect(screen, "#FF0000", self.rect)
+    
+    def interact(self, player: Player, level: Level):
+        interact_entity(self, player, level)
         
 #text class
 class Text:
@@ -366,6 +378,31 @@ def main():
         #screen refresh
         pygame.display.flip()
 
+def interact_entity(entity: Enemy, player: Player, level: Level):
+    stop = False
+    player.direction_x = 0
+    while True:
+        dt = clock.tick(60) / 1000
+        #event_check
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                stop = True
+        
+        screen.fill("#00FFFF")
+        player.draw((player.direction_x, player.direction_y), dt)
+        level.draw()
+        screen.blit(textbox, textboxcords)
+
+        pygame.display.update()
+        
+        if stop:
+            break
+        
+        
+
 #initial setup
 pygame.init()
 width, height = 1280, 800
@@ -379,10 +416,14 @@ if COMPILING:
     player_walk = SpriteSheet(resource_path("img/character_walk.png"))
     player_idle = SpriteSheet(resource_path("img/character_idle.png"))
     font = pygame.Font(resource_path("img/prstartk.ttf"))
+    textbox = pygame.image.load(resource_path("img/Textbox.png"))
 else:
     path = os.path.abspath(os.path.dirname(__file__))
     player_walk = SpriteSheet(os.path.join(path + "/img/character_walk.png"))
     player_idle = SpriteSheet(os.path.join(path + "/img/character_idle.png"))
+    textbox = pygame.image.load(os.path.join(path, "img", "Textbox.png"))
+    textbox = pygame.transform.scale_by(textbox, 16)
+    textboxcords = width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height()
     font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
 
 clock = pygame.time.Clock()
@@ -400,7 +441,6 @@ level_file_dict = {
 }
 
 levellist = ["tutorial", "level_2", "level_3", "level_4", "level_5", "level_6"]
-
 for y in range(4):
     player_walk_imgs += player_walk.load_strip((0,32 * y, 32, 32), 4)
 
