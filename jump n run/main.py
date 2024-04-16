@@ -15,7 +15,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 #function for separating text
-def sep_text(text: str, breakpoint = 15):
+def sep_text(text: str, breakpoint = 10):
     spaces = []
     texts = []
     posi = 1
@@ -423,16 +423,15 @@ else:
     player_walk = SpriteSheet(os.path.join(path + "/img/character_walk.png"))
     player_idle = SpriteSheet(os.path.join(path + "/img/character_idle.png"))
     textbox = pygame.image.load(os.path.join(path, "img", "Textbox.png"))
-    textbox = pygame.transform.scale_by(textbox, 16)
     textboxcords = width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height()
     font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
 
 textbox = pygame.transform.scale_by(textbox, 16)
 textboxcords = width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height()
-good_text = font.render(sep_text("make him like you, use this actoin twice"), True, "#000000")
-good_text_select = font.render(sep_text("make him like you"), True, "#00FF00")
-bad_text = font.render(sep_text("make him not like you"), True, "#000000")
-bad_text_select = font.render(sep_text("make him not like you"), True, "#FF0000")
+#good_text = font.render(sep_text("make him like you, use this action twice"), True, "#000000")
+#good_text_select = font.render(sep_text("make him like you"), True, "#00FF00")
+#bad_text = font.render(sep_text("make him not like you"), True, "#000000")
+#bad_text_select = font.render(sep_text("make him not like you"), True, "#FF0000")
 clock = pygame.time.Clock()
 good_text_coords = 10
 
