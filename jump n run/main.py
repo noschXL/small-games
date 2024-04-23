@@ -320,15 +320,15 @@ class Enemy:
 #text class
 class Text:
     
-    def __init__(self, text: str, pos: tuple, scale):
+    def __init__(self, text: str, pos: tuple, scale, color = "#000000", breakpoint = 10):
         
         last_height = 0
         self.rects = []
         self.surfaces = []
-        texts = sep_text(text)
+        texts = sep_text(text, breakpoint)
         
         for i,string in enumerate(texts):
-            surface = font.render(string, False, "#000000")
+            surface = font.render(string, False, color)
             surface = pygame.transform.scale_by(surface, scale)
             rect = surface.get_rect()
             rect.centerx = pos[0]
@@ -390,13 +390,25 @@ def interact_entity(entity: Enemy, player: Player, level: Level):
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if mousepos[0] <= width / 2:
+                    entity.likeing += 0.5
+                else:
+                    entity.likeing = 1
                 stop = True
         
         screen.fill("#00FFFF")
         player.draw((player.direction_x, player.direction_y), dt)
         level.draw()
-        screen.blit(textbox, textboxcords)
-
+        screen.blit(textbox, textboxrect.topleft)
+        if mousepos[0] <= width / 2:
+            good_list[1].draw()
+            bad_list[0].draw()
+        else:
+            good_list[0].draw()
+            bad_list[1].draw()
+        if abs(entity.likeing) >= 1:
+            entity.defeated = True
+            stop = True
         pygame.display.update()
         
         if stop:
@@ -423,17 +435,22 @@ else:
     player_walk = SpriteSheet(os.path.join(path + "/img/character_walk.png"))
     player_idle = SpriteSheet(os.path.join(path + "/img/character_idle.png"))
     textbox = pygame.image.load(os.path.join(path, "img", "Textbox.png"))
-    textboxcords = width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height()
     font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
 
 textbox = pygame.transform.scale_by(textbox, 16)
-textboxcords = width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height()
-#good_text = font.render(sep_text("make him like you, use this action twice"), True, "#000000")
-#good_text_select = font.render(sep_text("make him like you"), True, "#00FF00")
-#bad_text = font.render(sep_text("make him not like you"), True, "#000000")
-#bad_text_select = font.render(sep_text("make him not like you"), True, "#FF0000")
+textboxrect = pygame.rect.Rect(width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height() / 2, textbox.get_width() ,textbox.get_height())
+
+good_text_coords = (textboxrect.centerx - 150, textboxrect.centery)
+bad_text_coords = (textboxrect.centerx + 150, textboxrect.centery)
+good_text = Text("make him like you", good_text_coords, 0.7, "#000000", 7)
+good_text_select = Text("make him like you", good_text_coords, 1, "#00FF00", 7)
+bad_text = Text("make him not like you", bad_text_coords, 0.7, "#000000", 7)
+bad_text_select = Text("make him not like you", bad_text_coords, 1, "#FF0000", 7)
+
+good_list = [good_text, good_text_select]
+bad_list = [bad_text, bad_text_select]
+
 clock = pygame.time.Clock()
-good_text_coords = 10
 
 player_walk_imgs = []
 level_file_dict = {
