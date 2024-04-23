@@ -1,6 +1,7 @@
 #inital classes
 import pygame
 import pytmx
+import math
 import os
 import sys
 #set to True when compiling using pyinstaller --noconsole --onefile 'main.py' else set it to False to run the programm 
@@ -389,17 +390,25 @@ def interact_entity(entity: Enemy, player: Player, level: Level):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if mousepos[0] <= width / 2:
-                    entity.likeing += 0.5
-                else:
-                    entity.likeing = 1
-                stop = True
+        if pygame.mouse.get_pressed(5)[0]:
+            if mousepos[0] <= width / 2:
+                entity.likeing += 0.5
+            else:
+                entity.likeing = 1
+            stop = True
         
         screen.fill("#00FFFF")
-        player.draw((player.direction_x, player.direction_y), dt)
         level.draw()
         screen.blit(textbox, textboxrect.topleft)
+
+        x = arrow_coords[0] - mousepos[0]
+        y = arrow_coords[1] - mousepos[1]
+        angle = math.degrees(math.atan2(x,y))
+        arrow_blit = pygame.transform.rotate(arrow, angle + 180)
+        arrow_rect = arrow_blit.get_rect()
+        arrow_rect.center = arrow_coords
+        screen.blit(arrow_blit, (arrow_rect.x - 16, arrow_rect.y))
+        
         if mousepos[0] <= width / 2:
             good_list[1].draw()
             bad_list[0].draw()
@@ -409,6 +418,8 @@ def interact_entity(entity: Enemy, player: Player, level: Level):
         if abs(entity.likeing) >= 1:
             entity.defeated = True
             stop = True
+
+        player.draw((player.direction_x, player.direction_y), dt)
         pygame.display.update()
         
         if stop:
@@ -430,11 +441,13 @@ if COMPILING:
     player_idle = SpriteSheet(resource_path("img/character_idle.png"))
     font = pygame.Font(resource_path("img/prstartk.ttf"))
     textbox = pygame.image.load(resource_path("img/Textbox.png"))
+    arrow = pygame.image.load(resource_path("img/arrow.png"))
 else:
     path = os.path.abspath(os.path.dirname(__file__))
     player_walk = SpriteSheet(os.path.join(path + "/img/character_walk.png"))
     player_idle = SpriteSheet(os.path.join(path + "/img/character_idle.png"))
     textbox = pygame.image.load(os.path.join(path, "img", "Textbox.png"))
+    arrow = pygame.image.load(os.path.join(path, "img", "arrow.png"))
     font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
 
 textbox = pygame.transform.scale_by(textbox, 16)
@@ -442,8 +455,10 @@ textboxrect = pygame.rect.Rect(width / 2 - textbox.get_width() / 2, height / 2 -
 
 good_text_coords = (textboxrect.centerx - 150, textboxrect.centery)
 bad_text_coords = (textboxrect.centerx + 150, textboxrect.centery)
+arrow_coords = (textboxrect.centerx, textboxrect.centery + 64)
+
 good_text = Text("make him like you", good_text_coords, 0.7, "#000000", 7)
-good_text_select = Text("make him like you", good_text_coords, 1, "#00FF00", 7)
+good_text_select = Text("make him like you", good_text_coords, 1, "#00AA00", 7)
 bad_text = Text("make him not like you", bad_text_coords, 0.7, "#000000", 7)
 bad_text_select = Text("make him not like you", bad_text_coords, 1, "#FF0000", 7)
 
