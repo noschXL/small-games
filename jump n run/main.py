@@ -1,15 +1,21 @@
 #inital classes
 import pygame
+import pygame.camera
 import pytmx
 import math
 import os
 import sys
+import random
 #set to True when compiling using pyinstaller --noconsole --onefile 'main.py' else set it to False to run the programm 
 COMPILING = False
 
 def resource_path(relative_path):
     try:
-        base_path = sys.executable + "\\..\\"
+        latestbs = None
+        for char, i in enumerate(sys.executable):
+            if char == "\\":
+                latestbs = i
+        base_path = sys.executable[latestbs]
     except Exception:
         base_path = os.path.abspath(".")
 
@@ -144,6 +150,8 @@ class Player:
         self.allow_jump = True
         self.allow_dash = True
         self.direction_x = 1 
+        self.beaten = 0
+        self.not_beaten = 0
 
     def spawn(self, spawnpos : tuple = None):
         if spawnpos is None:
@@ -288,7 +296,14 @@ class Player:
                 dx = 0
                 self.vel.x = 0
                 if self.using:
-                    enemy.interact(self, level)
+                    beaten = enemy.interact(self, level)
+                    if beaten is None:
+                        pass
+                    elif beaten:
+                        self.beaten += 1
+                    else:
+                        self.not_beaten += 1
+                        
             if enemy.rect.colliderect(self.rect.x, self.rect.y + dy, self.rect.width, self.rect.height) and not enemy.defeated:
                 dy = 0
                 self.vel.y = 0
@@ -303,6 +318,9 @@ class Player:
 
         self.draw((self.direction_x, self.direction_y), dt)
         return new
+    
+    def the_end(self):
+        Endscreen(self.beaten, self.not_beaten)
 
 #enemy class
 class Enemy:
@@ -316,7 +334,7 @@ class Enemy:
         pygame.draw.rect(screen, "#FF0000", self.rect)
     
     def interact(self, player: Player, level: Level):
-        interact_entity(self, player, level)
+        return interact_entity(self, player, level)
         
 #text class
 class Text:
@@ -333,7 +351,7 @@ class Text:
             surface = pygame.transform.scale_by(surface, scale)
             rect = surface.get_rect()
             rect.centerx = pos[0]
-            rect.centery = pos[1] + last_height
+            rect.centery = pos[1] + last_height + 10
             last_height = rect.height * (i + 1)
             self.surfaces.append(surface)
             self.rects.append(rect)
@@ -350,6 +368,7 @@ def main():
     else:
         level = Level(level_file_dict[levellist[current_level]], player)
 
+    pygame.mixer.music.play(-1)
     #Game loop
     while True:
         #deltatime and stable Fps
@@ -366,7 +385,9 @@ def main():
         level.draw()
         adding = player.update(dt, level)
         if adding:
-            if current_level + adding >= 6:
+            if current_level + adding == 6:
+                player.the_end()
+            elif current_level + adding >= 6:
                 current_level = 3
             else:
                 current_level += adding
@@ -394,7 +415,7 @@ def interact_entity(entity: Enemy, player: Player, level: Level):
             if mousepos[0] <= width / 2:
                 entity.likeing += 0.5
             else:
-                entity.likeing = 1
+                entity.likeing = -1
             stop = True
         
         screen.fill("#00FFFF")
@@ -423,12 +444,47 @@ def interact_entity(entity: Enemy, player: Player, level: Level):
         pygame.display.update()
         
         if stop:
-            break
+            if abs(entity.likeing) >= 1:
+                return True if entity.likeing == -1 else False
+            return None
         
-        
+def Endscreen(beaten, not_beaten):
+    bad_endtexts = []
+    good_endtexts = []
+    for _ in range(beaten):
+        bad_endtexts.append(random.choice(names) + " " + random.choice(endings_bad))
+    for _ in range(not_beaten):
+        good_endtexts.append(random.choice(names) + " " + random.choice(endings_good))
+
+    y = height / 1
+    texts = []
+
+    for text in bad_endtexts + good_endtexts:
+        texts.append(Text(text + ".", (width / 2, y), 0.7, "#FFFFFF"))
+        y = texts[-1].rects[-1].bottom + 20
+
+    texts.append(Text("everything in this Game was made by noschXL and HanniB30", (width / 2, y + 100), 1, "#FFFFFF"))
+
+    while True:
+        clock.tick(60)
+        screen.fill("#000000")
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+        for text in texts:
+            text.draw()
+            for rect in text.rects:
+                rect.y -= 1
+            if texts[-1].rects[-1].y <= 0:
+                pygame.quit()
+                sys.exit()
+        pygame.display.flip()
 
 #initial setup
 pygame.init()
+pygame.mixer.init()
 width, height = 1280, 800
 screen = pygame.display.set_mode((width, height))
 # defining spritesheets, imgs, fonts and current path
@@ -440,27 +496,27 @@ if COMPILING:
     player_walk = SpriteSheet(resource_path("img/character_walk.png"))
     player_idle = SpriteSheet(resource_path("img/character_idle.png"))
     font = pygame.Font(resource_path("img/prstartk.ttf"))
-    textbox = pygame.image.load(resource_path("img/Textbox.png"))
-    arrow = pygame.image.load(resource_path("img/arrow.png"))
+    textbox = pygame.image.load(resource_path("img\\Textbox.png"))
+    arrow = pygame.image.load(resource_path("img\\arrow.png"))
 else:
     path = os.path.abspath(os.path.dirname(__file__))
     player_walk = SpriteSheet(os.path.join(path + "/img/character_walk.png"))
     player_idle = SpriteSheet(os.path.join(path + "/img/character_idle.png"))
     textbox = pygame.image.load(os.path.join(path, "img", "Textbox.png"))
-    arrow = pygame.image.load(os.path.join(path, "img", "arrow.png"))
+    arrow = pygame.image.load(os.path.join(path, "img/arrow.png"))
     font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
+    pygame.mixer.music.load(os.path.join(path + "/img/jump_and_run.mp3"))
 
 textbox = pygame.transform.scale_by(textbox, 16)
 textboxrect = pygame.rect.Rect(width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height() / 2, textbox.get_width() ,textbox.get_height())
-
-good_text_coords = (textboxrect.centerx - 150, textboxrect.centery)
-bad_text_coords = (textboxrect.centerx + 150, textboxrect.centery)
+good_text_coords = (textboxrect.centerx - 150, textboxrect.centery - 30)
+bad_text_coords = (textboxrect.centerx + 150, textboxrect.centery - 30)
 arrow_coords = (textboxrect.centerx, textboxrect.centery + 64)
 
-good_text = Text("make him like you", good_text_coords, 0.7, "#000000", 7)
-good_text_select = Text("make him like you", good_text_coords, 1, "#00AA00", 7)
-bad_text = Text("make him not like you", bad_text_coords, 0.7, "#000000", 7)
-bad_text_select = Text("make him not like you", bad_text_coords, 1, "#FF0000", 7)
+good_text = Text("tell him to please move out of the way", good_text_coords, 0.7, "#000000", 7)
+good_text_select = Text("tell him to please move out of the way", good_text_coords, 1, "#00AA00", 7)
+bad_text = Text("bully him out of the way", bad_text_coords, 0.7, "#000000", 7)
+bad_text_select = Text("bully him out of the way", bad_text_coords, 1, "#FF0000", 7)
 
 good_list = [good_text, good_text_select]
 bad_list = [bad_text, bad_text_select]
@@ -476,6 +532,26 @@ level_file_dict = {
     "level_5": "classroom_1.tmx",
     "level_6": "classroom_2.tmx"
 }
+names = ["Elias","Liam","Hannes",
+"Emilia","Hannah","Sebastian",
+"Emma","Julian","Nicole",
+"Jonas","Lukas","David",
+"Fabian","Sofia","Matteo",
+"Jakob","Emil","Leon",
+"Daniel","Thomas","Alexander",
+"Paul","Felix","Milo",
+"Moritz","Samuel","Luise",
+"Antonia","Michael","Marcel",
+"Anton","Theo","Ben",
+"Valentin","Simon","Finn",
+"Maximilian","Peter","Adrian",
+"Tim","Christian","Kevin",
+"Jan","Florian","Kilian",
+"Louis","Maxi","Jonathan",
+"Julia","Anne","Andreas"]
+
+endings_good = ["mag dich sehr", "ist dein/e beste/r Freund/in", "wird dich immer unterstützen", "schenkt dir 10€", "teilt Mittagessen mit dir, wenn du es vergisst"]
+endings_bad = ["hat jetzt lebenslanges Trauma", "lebt mit starken Depressionen", "ist Traurig", "schwört Rache zu nehmen", "wird dich ruinieren"]
 
 levellist = ["tutorial", "level_2", "level_3", "level_4", "level_5", "level_6"]
 for y in range(4):
