@@ -1,6 +1,5 @@
 #inital classes
 import pygame
-import pygame.camera
 import pytmx
 import math
 import os
@@ -368,7 +367,7 @@ def main():
     else:
         level = Level(level_file_dict[levellist[current_level]], player)
 
-    pygame.mixer.music.play(-1)
+    #pygame.mixer.music.play(-1)
     #Game loop
     while True:
         #deltatime and stable Fps
@@ -413,7 +412,7 @@ def interact_entity(entity: Enemy, player: Player, level: Level):
                 sys.exit()
         if pygame.mouse.get_pressed(5)[0]:
             if mousepos[0] <= width / 2:
-                entity.likeing += 0.5
+                entity.likeing = 1
             else:
                 entity.likeing = -1
             stop = True
@@ -463,7 +462,7 @@ def Endscreen(beaten, not_beaten):
         texts.append(Text(text + ".", (width / 2, y), 0.7, "#FFFFFF"))
         y = texts[-1].rects[-1].bottom + 20
 
-    texts.append(Text("everything in this Game was made by noschXL and HanniB30", (width / 2, y + 100), 1, "#FFFFFF"))
+    texts.append(Text("everything in this game was made by noschXL, with help from HanniB30", (width / 2, y + 100), 1, "#FFFFFF"))
 
     while True:
         clock.tick(60)
@@ -505,7 +504,7 @@ else:
     textbox = pygame.image.load(os.path.join(path, "img", "Textbox.png"))
     arrow = pygame.image.load(os.path.join(path, "img/arrow.png"))
     font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
-    pygame.mixer.music.load(os.path.join(path + "/img/jump_and_run.mp3"))
+    #pygame.mixer.music.load(os.path.join(path + "/img/jump_and_run.mp3"))
 
 textbox = pygame.transform.scale_by(textbox, 16)
 textboxrect = pygame.rect.Rect(width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height() / 2, textbox.get_width() ,textbox.get_height())
@@ -513,10 +512,10 @@ good_text_coords = (textboxrect.centerx - 150, textboxrect.centery - 30)
 bad_text_coords = (textboxrect.centerx + 150, textboxrect.centery - 30)
 arrow_coords = (textboxrect.centerx, textboxrect.centery + 64)
 
-good_text = Text("tell him to please move out of the way", good_text_coords, 0.7, "#000000", 7)
-good_text_select = Text("tell him to please move out of the way", good_text_coords, 1, "#00AA00", 7)
-bad_text = Text("bully him out of the way", bad_text_coords, 0.7, "#000000", 7)
-bad_text_select = Text("bully him out of the way", bad_text_coords, 1, "#FF0000", 7)
+good_text = Text("ask him for his number and be his friend", good_text_coords, 0.7, "#000000", 7)
+good_text_select = Text("ask him for his number and be his friend", good_text_coords, 1, "#00AA00", 7)
+bad_text = Text("ask him for his number and hate on it in public", bad_text_coords, 0.7, "#000000", 7)
+bad_text_select = Text("ask him for his number and hate on it in public", bad_text_coords, 1, "#FF0000", 7)
 
 good_list = [good_text, good_text_select]
 bad_list = [bad_text, bad_text_select]
@@ -550,8 +549,8 @@ names = ["Elias","Liam","Hannes",
 "Louis","Maxi","Jonathan",
 "Julia","Anne","Andreas"]
 
-endings_good = ["mag dich sehr", "ist dein/e beste/r Freund/in", "wird dich immer unterstützen", "schenkt dir 10€", "teilt Mittagessen mit dir, wenn du es vergisst"]
-endings_bad = ["hat jetzt lebenslanges Trauma", "lebt mit starken Depressionen", "ist Traurig", "schwört Rache zu nehmen", "wird dich ruinieren"]
+endings_good = ["likes you", "is your BFF", "is alwys there for you", "gifts you 10€", "shares lunch with you"]
+endings_bad = ["has lifelong depressions", "has strong depressions", "cries", "swears to take revenge", "will ruin you", "shut down his instagramm"]
 
 levellist = ["tutorial", "level_2", "level_3", "level_4", "level_5", "level_6"]
 for y in range(4):
