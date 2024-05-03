@@ -127,13 +127,13 @@ class Level:
             else:
                 self.enemys.append(Enemy(enemy[1].topleft))
         
-    def draw(self):
+    def draw(self, dt):
         #draw every tile
         for tile in self.tile_list + self.deco_list + self.interact_list + self.floor2_list:
             screen.blit(tile[0], tile[1])
         #draw enemys
         for enemy in self.enemys:
-            enemy.draw()
+            enemy.draw(dt)
         #draw text
         for text in self.texts:
             text.draw()
@@ -328,9 +328,25 @@ class Enemy:
         self.rect = pygame.rect.Rect(pos,(32,32))
         self.frame = 0
         self.likeing = 0
+        self.idle_frame = 0
+        if random.random:
+            self.old_direction = 1
+        else:
+            self.old_direction = -1
         
-    def draw(self):
-        pygame.draw.rect(screen, "#FF0000", self.rect)
+    def draw(self, dt):
+        self.idle_frame += 1 * dt / 0.0166
+        self.idle_frame = self.idle_frame % 30
+        if self.old_direction == 1:
+            self.walk_frame = 0
+            self.img = npc_idle_img[round(self.idle_frame // 5)]
+            self.img.set_colorkey("#FFFFFF")
+            screen.blit(self.img, self.rect)
+        elif self.old_direction == -1:
+            self.walk_frame = 0
+            self.img = npc_idle_img[round(self.idle_frame // 5) + 6]
+            self.img.set_colorkey("#FFFFFF")
+            screen.blit(self.img, self.rect)
     
     def interact(self, player: Player, level: Level):
         return interact_entity(self, player, level)
@@ -381,7 +397,7 @@ def main():
         screen.fill("#00FFFF")
 
         #drawing and updating
-        level.draw()
+        level.draw(dt)
         adding = player.update(dt, level)
         if adding:
             if current_level + adding == 6:
@@ -418,7 +434,7 @@ def interact_entity(entity: Enemy, player: Player, level: Level):
             stop = True
         
         screen.fill("#00FFFF")
-        level.draw()
+        level.draw(dt)
         screen.blit(textbox, textboxrect.topleft)
 
         x = arrow_coords[0] - mousepos[0]
@@ -494,6 +510,7 @@ if COMPILING:
         path = os.path.abspath(".")
     player_walk = SpriteSheet(resource_path("img/character_walk.png"))
     player_idle = SpriteSheet(resource_path("img/character_idle.png"))
+    npc_idle = SpriteSheet(resource_path("img/npc_idle.png"))
     font = pygame.Font(resource_path("img/prstartk.ttf"))
     textbox = pygame.image.load(resource_path("img\\Textbox.png"))
     arrow = pygame.image.load(resource_path("img\\arrow.png"))
@@ -501,6 +518,7 @@ else:
     path = os.path.abspath(os.path.dirname(__file__))
     player_walk = SpriteSheet(os.path.join(path + "/img/character_walk.png"))
     player_idle = SpriteSheet(os.path.join(path + "/img/character_idle.png"))
+    npc_idle = SpriteSheet(os.path.join(path + "/img/npc_idle.png"))
     textbox = pygame.image.load(os.path.join(path, "img", "Textbox.png"))
     arrow = pygame.image.load(os.path.join(path, "img/arrow.png"))
     font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
@@ -522,7 +540,6 @@ bad_list = [bad_text, bad_text_select]
 
 clock = pygame.time.Clock()
 
-player_walk_imgs = []
 level_file_dict = {
     "tutorial": "lvl_1.tmx",
     "level_2": "lvl_2.tmx",
@@ -550,15 +567,21 @@ names = ["Elias","Liam","Hannes",
 "Julia","Anne","Andreas"]
 
 endings_good = ["likes you", "is your BFF", "is alwys there for you", "gifts you 10€", "shares lunch with you"]
-endings_bad = ["has lifelong depressions", "has strong depressions", "cries", "swears to take revenge", "will ruin you", "shut down his instagramm"]
+endings_bad = ["has lifelong depressions", "has strong depressions", "cries", "swears to take revenge", "will ruin you", "shut down his instagramm", "has unalived him/herself"]
 
 levellist = ["tutorial", "level_2", "level_3", "level_4", "level_5", "level_6"]
+
+player_walk_imgs = []
 for y in range(4):
     player_walk_imgs += player_walk.load_strip((0,32 * y, 32, 32), 4)
 
 player_idle_img = []
 for y in range(2):
     player_idle_img += player_idle.load_strip((0,32 * y, 32, 32), 6)
+
+npc_idle_img = []
+for y in range(2):
+    npc_idle_img += npc_idle.load_strip((0,32 * y, 32, 32), 6)
 
 #running the game
 if __name__ == "__main__":
