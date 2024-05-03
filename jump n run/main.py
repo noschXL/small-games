@@ -374,7 +374,7 @@ class Text:
     def draw(self):
         for i in range(len(self.rects)):
             screen.blit(self.surfaces[i], self.rects[i])
-        
+
 def main():
     current_level = 0
     player = Player((width / 2, height / 2))
@@ -383,7 +383,9 @@ def main():
     else:
         level = Level(level_file_dict[levellist[current_level]], player)
 
-    #pygame.mixer.music.play(-1)
+    pygame.mixer.music.queue(os.path.join(path + "/img/jump_and_run.mp3"), "mp3", -1)
+    pygame.mixer.music.play()
+
     #Game loop
     while True:
         #deltatime and stable Fps
@@ -522,7 +524,7 @@ else:
     textbox = pygame.image.load(os.path.join(path, "img", "Textbox.png"))
     arrow = pygame.image.load(os.path.join(path, "img/arrow.png"))
     font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
-    #pygame.mixer.music.load(os.path.join(path + "/img/jump_and_run.mp3"))
+    pygame.mixer.music.load(os.path.join(path + "/img/jump_and_run.mp3"))
 
 textbox = pygame.transform.scale_by(textbox, 16)
 textboxrect = pygame.rect.Rect(width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height() / 2, textbox.get_width() ,textbox.get_height())
