@@ -1,0 +1,14 @@
+read finish cell3 1
+jump 12 equal finish true
+sensor reset door1 @enabled
+jump 8 equal reset true
+write reset cell1 0
+write reset cell2 0
+write reset cell3 0
+end
+write reset cell1 0
+write reset cell2 0
+write reset cell3 0
+end
+control enabled door1 false 0 0 0
+write false cell3 1
