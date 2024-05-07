@@ -6,7 +6,7 @@ import os
 import sys
 import random
 #set to True when compiling using pyinstaller --noconsole --onefile 'main.py' else set it to False to run the programm 
-COMPILING = False
+COMPILING = True
 
 def resource_path(relative_path):
     try:
@@ -383,8 +383,7 @@ def main():
     else:
         level = Level(level_file_dict[levellist[current_level]], player)
 
-    pygame.mixer.music.queue(os.path.join(path + "/img/jump_and_run.mp3"), "mp3", -1)
-    pygame.mixer.music.play()
+    pygame.mixer.music.play(-1)
 
     #Game loop
     while True:
@@ -506,6 +505,9 @@ width, height = 1280, 800
 screen = pygame.display.set_mode((width, height))
 # defining spritesheets, imgs, fonts and current path
 if COMPILING:
+    print(resource_path("img/jump_and_run.mp3"))
+    print(resource_path("img/character_walk.png"))
+
     try:
         path = sys._MEIPASS
     except Exception:
@@ -514,17 +516,18 @@ if COMPILING:
     player_idle = SpriteSheet(resource_path("img/character_idle.png"))
     npc_idle = SpriteSheet(resource_path("img/npc_idle.png"))
     font = pygame.Font(resource_path("img/prstartk.ttf"))
-    textbox = pygame.image.load(resource_path("img\\Textbox.png"))
-    arrow = pygame.image.load(resource_path("img\\arrow.png"))
+    textbox = pygame.image.load(resource_path("img/Textbox.png"))
+    arrow = pygame.image.load(resource_path("img/arrow.png"))
+    pygame.mixer.music.load(resource_path("img/jump_and_run.mp3"))
 else:
     path = os.path.abspath(os.path.dirname(__file__))
-    player_walk = SpriteSheet(os.path.join(path + "/img/character_walk.png"))
-    player_idle = SpriteSheet(os.path.join(path + "/img/character_idle.png"))
-    npc_idle = SpriteSheet(os.path.join(path + "/img/npc_idle.png"))
-    textbox = pygame.image.load(os.path.join(path, "img", "Textbox.png"))
+    player_walk = SpriteSheet(os.path.join(path, "/img/character_walk.png"))
+    player_idle = SpriteSheet(os.path.join(path, "img/character_idle.png"))
+    npc_idle = SpriteSheet(os.path.join(path, "img/npc_idle.png"))
+    textbox = pygame.image.load(os.path.join(path, "img/Textbox.png"))
     arrow = pygame.image.load(os.path.join(path, "img/arrow.png"))
-    font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
-    pygame.mixer.music.load(os.path.join(path + "/img/jump_and_run.mp3"))
+    font = pygame.Font(os.path.join(path, "/img/prstartk.ttf"))
+    pygame.mixer.music.load(os.path.join(path, "/img/jump_and_run.mp3"))
 
 textbox = pygame.transform.scale_by(textbox, 16)
 textboxrect = pygame.rect.Rect(width / 2 - textbox.get_width() / 2, height / 2 - textbox.get_height() / 2, textbox.get_width() ,textbox.get_height())

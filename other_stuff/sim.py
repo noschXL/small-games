@@ -16,7 +16,6 @@ DOTS = 50
 MASS = 1
 MAX_VEL = pg.math.Vector2(50,50)
 
-
 class fluid:
     dots = []
 
@@ -24,51 +23,55 @@ class fluid:
 
         self.position = pg.math.Vector2(x,y)
         self.velocity = pg.math.Vector2()
+        self.new_vel = pg.Vector2()
+        self.vel_list = []
+        self.new_vel_main = pg.Vector2()
 
     def update(self):
-        self.velocity.y += GRAVITY
+        #self.velocity.y += GRAVITY
         self.evening_out()
         self.velocity * DRAFT
         if self.velocity.x >= MAX_VEL.x:
             self.velocity.x = MAX_VEL.x
         if self.velocity.y >= MAX_VEL.y:
             self.velocity.y = MAX_VEL.y
+        self.velocity += self.new_vel_main
         self.position += self.velocity
         fluid.collision(self)
         pg.draw.circle(wn,AQUA,self.position,SIZE)
 
     def collision(self):
-        if self.position.y <= 0 + SIZE :
+        if self.position.y + self.velocity.y <= 0 + SIZE :
             self.velocity.y -= GRAVITY + 0.1
             self.velocity.y = abs(self.velocity.y)
             self.velocity.y *= COLLISION_DAMPING
-        if self.position.y >= 900 - SIZE:
+        if self.position.y +  self.velocity.y >= 900 - SIZE:
             self.velocity.y -= GRAVITY + 0.1
             self.velocity.y = -abs(self.velocity.y)
             self.velocity.y *= COLLISION_DAMPING
-        if self.position.x <= 0 + SIZE :
+        if self.position.x + self.velocity.x <= 0 + SIZE :
             self.velocity.x = abs(self.velocity.x)
             self.velocity.x *= COLLISION_DAMPING
-        if self.position.x >= 900 - SIZE:
+        if self.position.x + self.velocity.y >= 900 - SIZE:
             self.velocity.x = -abs(self.velocity.x)
             self.velocity.x *= COLLISION_DAMPING
 
     def evening_out(self):
-        new_vel = pg.Vector2()
-        vel_list = []
-        new_vel_main = pg.Vector2()
+        self.new_vel = pg.Vector2()
+        self.vel_list = []
+        self.new_vel_main = pg.Vector2()
         for dot in fluid.dots:
+            self.new_vel = pg.Vector2()
             dist = math.sqrt((abs(self.position.x - dot.position.x)) ** 2 + (abs(self.position.y - dot.position.y)) ** 2) #satz des pythagoras
             if dist >= 50 or dist == 0:
                 continue
             if -(self.position.x - dot.position.x) != 0:
-                new_vel.x +=  1 /-(self.position.x - dot.position.x)
+                self.new_vel.x +=  1 / -(dot.position.x - self.position.x) / 10
             if -(self.position.y - dot.position.y) != 0:
-                new_vel.y += 1 /-(self.position.y - dot.position.y)
-            vel_list.append(new_vel)
-            new_vel_main = self.average_vectors(vel_list)
-            self.velocity += (new_vel_main.x / 2, new_vel_main.y / 2)
-            dot.velocity -= (new_vel_main.x / 2, new_vel_main.y / 2)
+                self.new_vel.y += 1 / -(dot.position.y - self.position.y) / 10
+            self.vel_list.append(self.new_vel)
+            self.new_vel_main = self.average_vectors(self.vel_list)
+            dot.vel_list.append((self.new_vel_main.x / 2, self.new_vel_main.y / 2))
 
     def average_vectors(self, Vector_list = []):
         x = 0
