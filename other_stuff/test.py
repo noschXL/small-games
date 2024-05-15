@@ -20,10 +20,10 @@ def gen_row(i, xpix,ypix, offset):
     surf = pygame.Surface((1,1))
     print(offset)
     for j in range(ypix):
-        noise_val = noise1([(i + offset)/xpix, j/ypix])
-        noise_val += 0.5 * noise2([(i + offset)/xpix, j/ypix])
-        noise_val += 0.25 * noise3([(i + offset)/xpix, j/ypix])
-        noise_val += 0.125 * noise4([(i + offset)/xpix, j/ypix])
+        noise_val = noise1([(i - offset)/xpix, j/ypix])
+        noise_val += 0.5 * noise2([(i - offset)/xpix, j/ypix])
+        noise_val += 0.25 * noise3([(i - offset)/xpix, j/ypix])
+        noise_val += 0.125 * noise4([(i - offset)/xpix, j/ypix])
         noise_val = max(noise_val,0)
         noise_val += 0.5
         noise_val *= 255
@@ -48,6 +48,8 @@ def gen_map(xpix, ypix):
 i = 0
 offset = 0
 screen.fill((00,255,255))
+ipositive = True
+moveing = False
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -55,9 +57,11 @@ while True:
             exit()
 
     gen_row(i,600,600,offset)
+
     i += 1
-    if i >= 600:
-        offset += 1
+    if i >= 600 or moveing:
+        moveing = True
         screen.blit(screen,(-1,0))
+
     pygame.display.flip()
     clock.tick(60)

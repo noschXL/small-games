@@ -6,7 +6,7 @@ import os
 import sys
 import random
 #set to True when compiling using pyinstaller --noconsole --onefile 'main.py' else set it to False to run the programm 
-COMPILING = True
+COMPILING = False
 
 def resource_path(relative_path):
     try:
