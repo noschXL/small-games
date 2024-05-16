@@ -19,6 +19,16 @@ def resource_path(relative_path):
 
 COMPILING = False
 
+pygame.init()
+width, height = 1280,800
+screen = pygame.display.set_mode((width, height))
+HOME = 0
+ON_THE_WAY = 1
+SCHOOL = 2
+SCHOOLHALL = 3
+CLASSROOM = 4
+CAFETERIA = 5
+
 if not COMPILING:
     path = os.path.abspath(os.path.dirname(__file__))
     font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
@@ -28,18 +38,7 @@ else:
     font = pygame.Font(resource_path("img/prstartk.ttf"))
     arrow = pygame.image.load(resource_path("img/arrow.png"))
     overlay = pygame.image.load(resource_path("img/handy_overlay.png"))
-arrow_coords = (500,500)
-
-width, height = 1000,600
-screen = pygame.display.set_mode((width, height))
-HOME = 0
-ON_THE_WAY = 1
-SCHOOL = 2
-SCHOOLHALL = 3
-CLASSROOM = 4
-CAFETERIA = 5
-
-COMPILING = True
+arrow_coords = (width / 2,height / 2)
 
 def sep_text(text: str, breakpoint = 10):
     spaces = []
@@ -76,8 +75,8 @@ def read_table_at(table, colum, row):
 
 def Endscreen(rep, overlay):
     end_text = Text(f"du {"wurdest unbeliebter" if rep < 100 else "wurdest nicht unbeliebter"}", (width / 2, height / 2), 1)
-    time_text = Text(str(17)+":00", (70,40), 0.75)
-    rep_text = Text("♥:"+str(rep), (width - 70,40), 0.75)
+    time_text = Text(str(17)+":00", (85,45), 0.75)
+    rep_text = Text("♥:"+str(rep), (width - 85,45), 0.75)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -95,10 +94,10 @@ def main(overlay = overlay):
     time = 0
     place = HOME
     clock = pygame.Clock()
-    overlay = pygame.transform.scale_by(overlay, 10)
-    time_text = Text(str(time + 6)+":00", (70,40), 0.75)
+    overlay = pygame.transform.scale(overlay, (width, height))
+    time_text = Text(str(time + 6)+":00", (85,45), 0.75)
     rep = 100
-    rep_text = Text("♥:"+str(rep), (width - 70,40), 0.75)
+    rep_text = Text("♥:"+str(rep), (width - 85,45), 0.75)
     #--------------------------------------------------TABLE--------------------------------------------------
     table_of_contend = []
     for i in range(6):
@@ -116,7 +115,7 @@ def main(overlay = overlay):
         table_of_contend[SCHOOL][i + 2] = ("Vor Der Schule", "Geh in die      Schule", "Warte vor der   Schule")
     for i in range(8):
         if i % 2 == 0:
-            table_of_contend[SCHOOLHALL][i + 3] = ("Auf dem Schulgang", "Geh zur Unterrichts-  stunde", "Rede mit deinem ungemochten Freund")
+            table_of_contend[SCHOOLHALL][i + 3] = ("Auf dem Schulgang", "Geh zur Unterrichts-  stunde", "Rede mit deinem Freund den sonst niemand mag")
         else:
             table_of_contend[SCHOOLHALL][i + 3] = ("Auf dem Schulgang", "Geh zur Unterrichts-  stunde", "Warte auf dem Klo")
     for i in range(7):
@@ -140,8 +139,8 @@ def main(overlay = overlay):
         if result != 0:
             rep += 1 if result == 1 else -1
             time += 1
-            time_text = Text(str(time + 6)+":00", (70,40), 0.75)
-            rep_text = Text("♥:"+str(rep), (width - 70,40), 0.75)
+            time_text = Text(str(time + 6)+":00", (85,45), 0.75)
+            rep_text = Text("♥:"+str(rep), (width - 85,45), 0.75)
 
             if result == 2:
                 place -= 1 if place < SCHOOL else 0
@@ -150,7 +149,7 @@ def main(overlay = overlay):
             place = max(place, 0)
             if time == 3 and place == HOME:
                 time = 6
-                time_text = Text(str(time + 6)+":00", (70,40), 0.75)
+                time_text = Text(str(time + 6)+":00", (85,45), 0.75)
             if place > CAFETERIA:
                 place = SCHOOLHALL
             if time == 11:
@@ -178,8 +177,8 @@ class Text:
             surface = pygame.transform.scale_by(surface, scale)
             rect = surface.get_rect()
             rect.centerx = pos[0]
-            rect.centery = pos[1] + last_height + 10
-            last_height = rect.height * (i + 1)
+            rect.top = pos[1] + last_height + 10
+            last_height = rect.bottom - pos[1]
             self.surfaces.append(surface)
             self.rects.append(rect)
         
@@ -217,9 +216,9 @@ class Question:
 
     def load_text(self):
         self.texts = []
-        self.texts.append(Text(self.question, (500,30), 1, "#000000", 15))
-        self.texts.append(Text(self.answera, (300,300), 1, "#000000", 15))
-        self.texts.append(Text(self.answerb, (700,300), 1, "#000000", 15))
+        self.texts.append(Text(self.question, (width / 2,height / 2 - 300), 1, "#000000", 15))
+        self.texts.append(Text(self.answera, (width / 2 - 300,height / 2), 1, "#000000", 15))
+        self.texts.append(Text(self.answerb, (width / 2 + 300,height / 2), 1, "#000000", 15))
 
 
     def update(self):
@@ -240,6 +239,3 @@ class Question:
                 return 1 if mousepos[0] <= width / 2 else 2
             self.last = 0
         return 0
-
-if __name__ == "__main__":
-    main()
