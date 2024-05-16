@@ -5,3 +5,5 @@ build/
 dist/
 o-console.spec
 main.spec
+*.pdf
+*.odt
