@@ -4,6 +4,8 @@ import taeter
 
 pygame.init()
 
+Compiling = False
+
 def sep_text(text: str, breakpoint = 10):
     spaces = []
     texts = []
@@ -22,8 +24,22 @@ def sep_text(text: str, breakpoint = 10):
     texts.append(text[old_space:])
     return texts
 
-path = os.path.abspath(os.path.dirname(__file__))
-font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
+def resource_path(relative_path):
+    try:
+        latestbs = None
+        for char, i in enumerate(sys.executable):
+            if char == "\\":
+                latestbs = i
+        base_path = sys.executable[latestbs]
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+if not Compiling:
+    path = os.path.abspath(os.path.dirname(__file__))
+    font = pygame.Font(os.path.join(path + "/img/prstartk.ttf"))
+else:
+    font = pygame.Font(resource_path("img/prstartk.ttf"))
 class Text:
     
     def __init__(self, text: str, pos: tuple, scale, color = "#000000", breakpoint = 10):

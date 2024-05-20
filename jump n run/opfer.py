@@ -165,20 +165,19 @@ def main(overlay = overlay):
 
 class Text:
     
-    def __init__(self, text: str, pos: tuple, scale, color = "#000000", breakpoint = 10):
+    def __init__(self, text: str, font: pygame.Font, pos: tuple, scale, color = "#000000", breakpoint = 10, line_spacing = 5):
         
         last_height = 0
         self.rects = []
         self.surfaces = []
         texts = sep_text(text, breakpoint)
         
-        for i,string in enumerate(texts):
+        for string in texts:
             surface = font.render(string, False, color)
             surface = pygame.transform.scale_by(surface, scale)
             rect = surface.get_rect()
             rect.centerx = pos[0]
-            rect.top = pos[1] + last_height + 10
-            last_height = rect.bottom - pos[1]
+            rect.top = pos[1] + last_height + line_spacing
             self.surfaces.append(surface)
             self.rects.append(rect)
         

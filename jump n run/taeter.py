@@ -587,5 +587,3 @@ for y in range(2):
 npc_idle_img = []
 for y in range(2):
     npc_idle_img += npc_idle.load_strip((0,32 * y, 32, 32), 6)
-
-

@@ -1,0 +1,1 @@
+width, height = 1280, 800

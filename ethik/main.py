@@ -17,7 +17,7 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-COMPILING = False
+COMPILING = True
 
 if not COMPILING:
     path = os.path.abspath(os.path.dirname(__file__))
