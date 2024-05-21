@@ -1,7 +1,8 @@
+from typing import Any
 import pygame
 
 class Button():
-    def __init__(self, screen: pygame.Surface,pos: tuple[int], label: str, font: pygame.Font,center: bool = True, bg: str = "#000000", hoverbg: str = "#FFFFFF", text_color: str = "#FFFFFF", hover_text_color: str = "#000000", rounded = -1,text_size = 1):
+    def __init__(self, screen: pygame.Surface,pos: tuple[int], label: str, font: pygame.Font,center: bool = True, bg: str = "#FFFFFF", hoverbg: str = "#000000", text_color: str = "#000000", hover_text_color: str = "#FFFFFF", rounded = -1,text_size = 1):
 
         self.screen = screen
         self.center = center
@@ -10,7 +11,7 @@ class Button():
         self.font = font
         self.textsize = text_size
 
-        self.hoverd = False
+        self.hovered = False
 
         self.bg = bg
         self.hoverbg = hoverbg
@@ -25,7 +26,7 @@ class Button():
             self.rect.center = pos
         else: self.rect.topleft = pos
         self.final_surf = pygame.Surface((self.rect.width + 2, self.rect.height + 2))
-        pygame.draw.rect(self.final_surf, "#000000", (0,0,self.rect.width + 2, self.rect.height + 2), 1, rounded, rounded, rounded, rounded, rounded)
+        pygame.draw.rect(self.final_surf, "#000000", (0,0,self.rect.width + 2, self.rect.height + 2), rounded, rounded, rounded, rounded, rounded, rounded)
         self.final_surf.blit(surf, (1,1))
 
         surf = font.render(self.label, True, self.hovertextcolor, self.hoverbg)
@@ -34,7 +35,7 @@ class Button():
         self.hover_final_surf.blit(surf, (1,1))
 
     def draw(self):
-        if self.hoverd:
+        if self.hovered:
             self.screen.blit(self.final_surf, (self.rect.x + 1, self.rect.y + 1))
         else:
             self.screen.blit(self.hover_final_surf, (self.rect.x + 1, self.rect.y + 1))
@@ -42,9 +43,59 @@ class Button():
     def update(self, mousepos):
         rect = pygame.Rect(mousepos[0], mousepos[1], 1, 1)
         if self.rect.colliderect(rect):
-            self.hoverd = True
+            self.hovered = True
         else:
-            self.hoverd = False
+            self.hovered = False
+
+class ToggleButton(Button):
+    def __init__(self, screen: pygame.Surface,pos: tuple[int], label: str, font: pygame.Font,center: bool = True, bg: str = "#FFFFFF", hoverbg: str = "#000000",pushbg: str = "#A0A0A0", text_color: str = "#000000", hover_text_color: str = "#FFFFFF",push_text_color: str = "#FAFAFA" ,rounded = -1,text_size = 1):
+        super().__init__(screen, pos, label, font, center, bg, hoverbg, text_color, hover_text_color, rounded, text_size)
+        self.pushbg = pushbg
+        self.push_text_color = push_text_color
+    
+        surf = font.render(self.label, True, self.push_text_color, self.pushbg)
+        self.push_final_surf = pygame.Surface((self.rect.width + 2, self.rect.height + 2))
+        pygame.draw.rect(self.push_final_surf, "#000000", (0,0,self.rect.width + 2, self.rect.height + 2), 1, rounded, rounded, rounded, rounded, rounded)
+        self.push_final_surf.blit(surf, (1,1))
+        self.pushed = False
+
+    def draw(self):
+        if self.hovered:
+            self.screen.blit(self.hover_final_surf, (self.rect.x + 1, self.rect.y + 1))
+        elif self.pushed:
+            self.screen.blit(self.push_final_surf, (self.rect.x + 1, self.rect.y + 1))
+        else:
+            self.screen.blit(self.final_surf, (self.rect.x + 1, self.rect.y + 1))
+        
+    def update(self, mousepos, mousepress):
+        if self.rect.collidepoint(mousepos):
+            self.hovered = True
+            if mousepress:
+                self.pushed = not self.pushed
+        else:
+            self.hovered = False
+
+class RadioButtonGroup:
+    def __init__(self):
+        self.members = []
+
+    def add(self, button: ToggleButton):
+        self.members.append(button)
+
+    def update(self, mousepos, mousepress):
+        for button in self.members:
+            if button.rect.collidepoint(mousepos):
+                button.hovered = True
+                if mousepress:
+                    button.pushed = not button.pushed
+            else:
+                button.hovered = False
+                if mousepress:
+                    button.pushed = False
+
+    def draw(self):
+        for button in self.members:
+            button.draw()
 
 
 def sep_text(text: str, breakpoint = 10):
