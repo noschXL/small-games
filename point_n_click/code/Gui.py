@@ -83,11 +83,13 @@ class RadioButtonGroup:
         self.members.append(button)
 
     def update(self, mousepos, mousepress):
+        self.change = False
         for button in self.members:
             if button.rect.collidepoint(mousepos):
                 button.hovered = True
                 if mousepress:
                     button.pushed = not button.pushed
+                    self.change = True
             else:
                 button.hovered = False
                 if mousepress:
@@ -97,6 +99,15 @@ class RadioButtonGroup:
         for button in self.members:
             button.draw()
 
+    def get_active(self):
+        for i,button in enumerate(self.members):
+            if button.pushed:
+                return i
+            
+        return None
+
+    def changed(self):
+        return self.change
 
 def sep_text(text: str, breakpoint = 10):
     spaces = []

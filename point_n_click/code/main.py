@@ -43,4 +43,6 @@ while True:
     screen.blit(test_img, (0,0))
     buttons.update(mousepos, mousepress)
     buttons.draw()
+    if buttons.changed():
+        print(buttons.get_active())
     pygame.display.flip()
