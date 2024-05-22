@@ -22,8 +22,11 @@ buttons.add(Gui.ToggleButton(screen, (259, 719 + 20 * 1), "Pull", font, False, r
 buttons.add(Gui.ToggleButton(screen, (259, 719 + 20 * 2), "Take", font, False, rounded= 20))
 buttons.add(Gui.ToggleButton(screen, (259, 719 + 20 * 3), "Use", font, False, rounded= 20))
 
+test = Gui.Dropdown(screen, font=font)
+
 last = 0
 while True:
+    mousescroll = 0
     mousepress = False
     mousepos = pygame.mouse.get_pos()
     screen.fill("#FFFFFF")
@@ -32,6 +35,9 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        elif event.type == pygame.MOUSEWHEEL:
+            mousescroll = event.y
+            print(mousescroll)
 
     if pygame.mouse.get_pressed()[0]:
         last = 1
@@ -45,4 +51,7 @@ while True:
     buttons.draw()
     if buttons.changed():
         print(buttons.get_active())
+
+    test.update(mousepos, mousepress, mousescroll)
+    test.draw()
     pygame.display.flip()

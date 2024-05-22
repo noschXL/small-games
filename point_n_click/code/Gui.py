@@ -108,6 +108,62 @@ class RadioButtonGroup:
 
     def changed(self):
         return self.change
+    
+class Dropdown:
+    def __init__(self, screen: pygame.Surface,maintext: str = "mainbutton" ,choices: list[str] = ["Test1", "Test2"], showchoices: int = 2, font: pygame.Font = None ,pos: tuple = (0,0), center:bool = False, bg: str = "#FFFFFF", hoverbg: str = "#000000",pushbg: str = "#A0A0A0",text_color: str = "#000000", hover_text_color: str = "#FFFFFF", push_text_color: str = "#FAFAFA" ,textsize: float = 1):
+        self.buttons = RadioButtonGroup()
+        self.screen = screen
+        maxlenght = 0
+        height = 0
+        self.show = showchoices
+        self.pushed = False
+        self.hovered = False
+        if choices == []:
+            raise BaseException(f"Empty choices at {self}")
+        for choice in choices:
+            self.buttons.add(ToggleButton(screen, pos, choice, font, center, bg, hoverbg, pushbg,text_color, hover_text_color, push_text_color,-1, textsize))
+            if self.buttons.members[-1].rect.width > maxlenght:
+                maxlenght = self.buttons.members[-1].rect.width
+            height += self.buttons.members[-1].rect.height
+
+        testrender = font.render(maintext, True, text_color, bg)
+        testrect = testrender.get_rect()
+        if testrect.width > maxlenght:
+            maxlenght = testrect.width
+
+        self.mainbutton = pygame.Surface((maxlenght + 2, height + 2))
+        self.mainbutton.fill("#000000")
+        self.mainbutton.blit(font.render(maintext, True, text_color, bg), (1,1))
+
+        self.hover_mainbutton = pygame.Surface((maxlenght + 2, height + 2))
+        self.hover_mainbutton.fill("#000000")
+        self.hover_mainbutton.blit(font.render(maintext, True, hover_text_color, bg), (1,1))
+
+        self.push_mainbutton = pygame.Surface((maxlenght + 2, height + 2))
+        self.push_mainbutton.fill("#000000")
+        self.push_mainbutton.blit(font.render(maintext, True, push_text_color, bg), (1,1))
+
+        self.rect = self.mainbutton.get_rect()
+        if center:
+            self.rect.center = pos
+        else:
+            self.rect.topleft = pos
+
+    def update(self, mousepos, mousepress, scrolled):
+        if self.rect.collidepoint(mousepos):
+            self.hovered = True
+            if mousepress:
+                self.pushed = not self.pushed
+        else:
+            self.hovered = False
+
+    def draw(self):
+        if self.pushed:
+            self.screen.blit(self.push_mainbutton, (self.rect.topleft))
+        elif self.hovered:
+            self.screen.blit(self.push_mainbutton, (self.rect.topleft))
+        else:
+            self.screen.blit(self.mainbutton, (self.rect.topleft))
 
 def sep_text(text: str, breakpoint = 10):
     spaces = []
