@@ -2,6 +2,8 @@ import pygame
 import os
 import sys
 import Gui
+import grass
+import random
 from settings import *
 
 pygame.init()

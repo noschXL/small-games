@@ -31,7 +31,6 @@ bishop_loc = (2*15, 0, 15, 15)
 queen_loc = (3*15, 0, 15, 15)
 king_loc = (4*15, 0, 15, 15)
 pawn_loc = (5*15, 0, 15, 15)
-# Classes
 # Display
 WIDTH = 640
 HEIGHT = 690
@@ -151,7 +150,7 @@ class Timer():
 class Board:
     fields = []
 
-    def __init__(self, x, y, colorblack, width, height):
+    def __init__(self, x, y, color, width, height):
         self.x = x 
         self.y = y
         self.width = width
@@ -159,18 +158,20 @@ class Board:
         self.piece = None
         self.index = len(Board.fields) - 1
         self.old_piece = None
-        self.color = colorblack
+        self.color = color
         self.originalcolor = self.color
 
     def draw(self):
 
         
         if self.color == possible_color:
-            pygame.draw.rect(wn, self.originalcolor, (self.x * 80, self.y * 80, self.width, self.height))
+            pygame.draw.rect(wn, self.color, (self.x * 80, self.y * 80, self.width, self.height))
             s = pygame.Surface((self.width, self.height))
             s.set_alpha(128)
             s.fill(possible_color)
             wn.blit(s, (self.x * 80, self.y * 80))
+        elif self.color == select_color:
+            pygame.draw.rect(wn, select_color, (self.x * 80, self.y * 80, self.width, self.height))
         else:
             pygame.draw.rect(wn, black_color if self.color == 0 else white_color, (self.x * 80, self.y * 80, self.width, self.height))
 

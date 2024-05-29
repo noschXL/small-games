@@ -3,3 +3,4 @@ var autoclicker = setInterval(function(){
 	cookie = document.getElementById('bigCookie');
 	cookie.click();
 }, 1)
+

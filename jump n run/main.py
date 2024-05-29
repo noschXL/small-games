@@ -4,7 +4,7 @@ import taeter
 
 pygame.init()
 
-Compiling = False
+Compiling = True
 
 def sep_text(text: str, breakpoint = 10):
     spaces = []
@@ -50,6 +50,7 @@ class Text:
         texts = sep_text(text, breakpoint)
         
         for i,string in enumerate(texts):
+            print(i)
             surface = font.render(string, False, color)
             surface = pygame.transform.scale_by(surface, scale)
             rect = surface.get_rect()

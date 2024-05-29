@@ -17,7 +17,7 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-COMPILING = False
+COMPILING = True
 
 pygame.init()
 width, height = 1280,800
@@ -165,7 +165,7 @@ def main(overlay = overlay):
 
 class Text:
     
-    def __init__(self, text: str, font: pygame.Font, pos: tuple, scale, color = "#000000", breakpoint = 10, line_spacing = 5):
+    def __init__(self, text: str, pos: tuple, scale, color = "#000000", breakpoint = 10, line_spacing = 5):
         
         last_height = 0
         self.rects = []
@@ -178,6 +178,7 @@ class Text:
             rect = surface.get_rect()
             rect.centerx = pos[0]
             rect.top = pos[1] + last_height + line_spacing
+            last_height = rect.bottom - pos[1]
             self.surfaces.append(surface)
             self.rects.append(rect)
         
