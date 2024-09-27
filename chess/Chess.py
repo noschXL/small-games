@@ -14,7 +14,7 @@ open(pathdir + "/saves/save.dat", "a").close()
 # plans / Pläne
 # play against AI / gegen einen Computer spielen
 # online multiplayer / online mehrspieler
-# different graphics or colors / verschiedene Grafiken or colors
+# different graphics or colors / verschiedene Grafiken oder farben
 # show captured pieces / geschlagene Figuren zeigen
 # freeplay / freie Züge
 # limited time / begrenzte Zeit
